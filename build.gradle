@@ -25,6 +25,9 @@ dependencies {
     testCompile 'junit:junit:4.+'
 }
 
+sourceCompatibility = '1.5'
+targetCompatibility = '1.5'
+
 // IDE-specific settings
 
 idea.project.ipr {
