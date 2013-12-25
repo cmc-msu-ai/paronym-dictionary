@@ -55,3 +55,13 @@ distZip.dependsOn extractDb
 applicationDistribution.from('db/paronym') {
     into 'db/paronym'
 }
+
+tasks.startScripts {
+  doLast {
+    def unixScriptFile = file "${outputDir}/${applicationName}"
+    def windowsScriptFile = file "${outputDir}/${applicationName}.bat"
+
+    unixScriptFile.text = unixScriptFile.text.replace("\nexec \"\$JAVACMD\"", "\ncd \"\$APP_HOME\"\nexec \"\$JAVACMD\"")
+    windowsScriptFile.text = windowsScriptFile.text.replace("\n\"%JAVA_EXE%\"", "\ncd \"%APP_HOME%\"\n\"%JAVA_EXE%\"")
+  }
+}
