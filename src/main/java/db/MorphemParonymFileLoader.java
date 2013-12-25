@@ -742,7 +742,7 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                                             "(id1=" + w1.id + ") and(id2=" + w2.id + ") union " +
                                             "select * from paronyms where (id1=" + w2.id + ") and(id2=" + w1.id + ")").next()
                                             ) {
-
+                                      
                                         db.update("INSERT INTO paronyms(id1,id2,dmcode,q) " +
                                             "VALUES(" + w1.id + "," + w2.id + "," + dmcode + "," + q + ")");
 
@@ -767,4 +767,454 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                         continue;
                     }
                     id = rs.getInt("id");
-                    w = new WordFromFile(id, word, part, Query.construct
+                    w = new WordFromFile(id, word, part, Query.constructMorphList(db, id));
+                    w.aot_id = rs.getObject("aot_id") == null ? -1 : rs.getInt("aot_id");
+                    w.num = rs.getObject("num") == null ? -1 : rs.getInt("num");
+
+                    if (!includeNotFoundWords && (w.aot_id == -1)) {
+                        continue;
+                    }
+
+                    //добавить текущее слово в группу
+                    wordList.add(w);
+                }
+            } catch (NoSuchElementException e) {
+            }
+
+        } //while
+
+
+
+    }
+
+    private void createRootsFiles(ArrayList<HashSet<Integer>> rootsList, ArrayList<Integer> rootsPartsList) throws IOException, SQLException {
+
+        BufferedWriter rootsFile = new BufferedWriter(new FileWriter("outputFiles\\roots_groups.txt"));
+        BufferedWriter rootsIdFile = new BufferedWriter(new FileWriter("inputFiles\\rootsId_groups.txt"));
+        ResultSet rs;
+        double counter = 0; //для подсчета среднего числа корней в группе
+        int i = 0;
+        int part;
+
+        for (HashSet<Integer> set : rootsList) {
+            counter += set.size();
+            part = rootsPartsList.get(i);
+            rootsFile.write(part + " ");
+            rootsIdFile.write(part + " ");
+            i++;
+            for (int id : set) {
+                rs = db.queryResult("select * from morphs where id_m =" + id);
+                rs.next();
+                //первое число в строке - часть речи
+                rootsFile.write(rs.getString("morph") + " ");
+                rootsIdFile.write(id + " ");
+            }
+            rootsFile.newLine();
+            rootsIdFile.newLine();
+        }
+        counter /= rootsList.size();
+        rootsFile.write("Среднее кол-во черед. корней в группе: " + counter);
+
+        rootsFile.flush();
+        rootsFile.close();
+        rootsIdFile.flush();
+        rootsIdFile.close();
+    }
+
+    private boolean wordIsIn(WordFromFile w, ArrayList<WordFromFile> parlist) {
+        for (WordFromFile word : parlist) {
+            if (word.word.equals(w.word)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int getPosArrayValue(boolean[] posArray) {
+        int part = -1;
+        boolean found = false;
+        for (int i = 0; i < posArray.length; i++) {
+            if (posArray[i]) {
+                if (found) {
+                    return -1;
+                }
+                part = i;
+                found = true;
+            }
+        }
+        return part;
+    }
+
+    private void fillPosArray(ArrayList<Paradigm> paradigms, boolean[] posArray) {
+            Arrays.fill(posArray, false);
+            for (Paradigm w : paradigms) {
+                if (w.part != -1) {
+                    posArray[w.part] = true;
+                }
+
+            }
+        }
+
+
+    private void setPosForGroup(ArrayList<WordFromFile> parlist, int groupPart) throws SQLException {
+
+        for (WordFromFile wrd : parlist) {
+            wrd.part = groupPart;
+//            db.update("update words set part = " + groupPart + " where id = " + wrd.id);   //@todo ?????
+        }
+    }
+
+    WordFromFile makeWordFromFile(String s, int part) throws InvalidInputException, SQLException {
+
+        int len = s.length();
+        char[] str = s.toCharArray();
+        WordFromFile w = new WordFromFile();
+
+        boolean pref = true; //определяет, как интерпретировать знак '-' (до корня - префикс, после - суффикс)
+        int i = 0; //номер позиции
+
+        //для проверки правильности разбора
+        int rootcount = 0;
+        int endcount = 0;
+        int prefcount = 0;
+        int suffcount = 0;
+        boolean suffAfterEnd = false;
+
+        // morph parser
+        try {
+            while (i < len) {
+
+                switch (str[i]) {
+                    case'-':
+                        if (pref) {
+                            prefcount++;
+                            i = getMorph(i + 1, str, w, GramDecoder.PREF, false);
+                        } else if (suffAfterEnd) {
+                            str[i] = '^';
+                            suffcount++;
+                            i = getMorph(i + 1, str, w, GramDecoder.SUFF, true);
+                        } else {
+                            str[i] = '^';
+                            suffcount++;
+                            i = getMorph(i + 1, str, w, GramDecoder.SUFF, false);
+                        }
+
+                        break;
+
+                    case'+':
+                        pref = false;
+                        rootcount++;
+                        i = getMorph(i + 1, str, w, GramDecoder.ROOT, false);
+                        break;
+                    case'*':
+                        suffAfterEnd = true;
+                        endcount++;
+                        i = getMorph(i + 1, str, w, GramDecoder.ENDING, false);
+                        break;
+                    case'<':
+                        //@todo случай неправильных вх. данных (возможен выход за гр. массива)
+                        switch (str[i + 1]) {
+                            case's':
+                                w.part = 0;
+                                break;
+                            case'v':
+                                w.part = 1;
+                                break;
+                            case'a':
+                                if (str[i + 2] == 'j') {
+                                    w.part = 2;
+                                } else {
+                                    w.part = 3;
+                                }
+                                break;
+                            default:
+                                throw new InvalidInputException("Unknown part of speech: " + str);
+                        }
+                        len = i;
+                        break;
+                    default:
+                        if (i == 0) {
+                            //означает, что слово не полностью разобрано
+                            throw new InvalidInputException("Word not correctly marked: ");
+                        }
+                }
+
+
+                i++;
+            }
+
+            if (part == GramDecoder.ADVERB) {
+                //для корректной проверки разбора наречий
+                w.part = part;
+            }
+            checkMorphCount(w.part, prefcount, rootcount, suffcount, endcount);
+
+
+            char[] splitWord = new char[s.length()];
+            int j = 0;
+            for (char c : str) {
+                if (Character.isDigit(c)) {
+                    continue;
+                }
+                if (c == '<') {
+                    break;
+                }
+                splitWord[j] = c;
+                j++;
+
+            }
+
+
+            w.splitWord = new String(splitWord, 0, j);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage() + s);
+        }
+
+
+        return w;
+    }
+
+    /**
+     * считывает морф. цифры игнорируются.
+     * добавляет его к полю word текущего слова.
+     * <p/>
+     * вариант 1 (проверяет, есть ли морф в таблице морфов. если нет - бросает исключение)
+     * вариант 2(подразумевается, что исходный файл содержит только правильные морфы.
+     * добавляет новый морф в таблицу морфов, если его там еще нет)
+     * добавляет Id морфа в список morphList текущего слова
+     *
+     * @param i            текущая позиция в массиве str
+     * @param str          массив, содержащий текущее слово
+     * @param w            текущее слово
+     * @param type         тип считываемого морфа
+     * @param suffAfterEnd является ли считываемый морф суффиксом, следующим после окончания
+     * @return номер последней позиции считанного морфа
+     * @throws InvalidInputException неправильный разбор слова
+     * @throws SQLException          ошибка при работе с базой данных
+     */
+    int getMorph(int i, char[] str,  WordFromFile w, int type, boolean suffAfterEnd) throws InvalidInputException {
+
+        String strmorph;
+
+        int len = str.length;
+        int j = 0;
+
+        //@todo не проверяется, что буква кириллическая!!!
+        while ((i < len) && (Character.isLetter(str[i]))) {
+
+            i++;
+            j++;
+        }
+        strmorph = new String(str, i - j, j);
+
+        //суффикс, следующий после окончания. Мб только "сь" или "ся"
+        if (suffAfterEnd && (!strmorph.equals("сь")) && (!strmorph.equals("ся"))) {
+            throw new InvalidInputException("Suffix after ending. " + strmorph + " ");
+        }
+
+        // проверка морфа на правильность
+        checkMorph(strmorph, type);
+
+        w.word = w.word.concat(strmorph);  //поэтапное заполнение;
+
+        return i - 1;  //return position of the last symbol in morph
+    }
+
+    private void addMorph(String strmorph, WordFromFile w, int type) throws SQLException {
+        int id;
+
+        if ((id = db.queryAndGetId("select * from morphs where " +
+                    "(morph='" + strmorph + "')and(type=" + type + ")")) == -1) {
+
+                //в таблице морфов такого еще нет - добавить.
+                db.update("INSERT INTO morphs(morph,type) VALUES ('" + strmorph + "'," + type + ")");
+                id = db.queryAndGetId("call identity()");
+            }
+        w.morphList.add(new Morph(id, type, strmorph));
+    }
+
+    private void checkMorph(String morph, int type) throws InvalidInputException {
+        int l = morph.length();
+        switch (type) {
+            case GramDecoder.PREF:
+                if ((l > 7) || (l < 1)) {
+                    throw new InvalidInputException("CheckMorph. Prefix empty or longer than 7 symbols: " + morph + " in ");
+                }
+                break;
+            case GramDecoder.ROOT:
+                if ((l > 10)|| (l < 1)) {
+                    throw new InvalidInputException("" +
+                            "CheckMorph. Root empty or longer than 10 symbols: " + morph + " in ");
+                }
+                break;
+            case GramDecoder.SUFF:
+                if ((l > 5)|| (l < 1)) {
+                    throw new InvalidInputException("CheckMorph. Suffix empty or longer than 5 symbols: " + morph + " in ");
+                }
+                break;
+            case GramDecoder.ENDING:
+                break;
+
+        }
+    }
+
+    private void checkMorphCount(int part, int pref, int root, int suff, int end) throws InvalidInputException {
+        if (root != 1) {
+            throw new InvalidInputException("Too many/few roots: " + root + " ");
+        } else if ((part == GramDecoder.ADVERB) ? (end != 0) : (end != 1)) {
+            throw new InvalidInputException("Too many/few endings: " + end + " ");
+        } else if (pref > 3) {
+            throw new InvalidInputException("Too many prefixes" + pref + " ");
+        } else if (suff > 6) {
+            throw new InvalidInputException("Too many suffixes" + suff + " ");
+        }
+    }
+
+
+
+
+
+   
+   //заполняет таблицу ROOTS данными о чередующихся корнях. Данные берутся из файла с именем rootsIdFileName
+    public void fillRootsTable(String rootsIdFileName) throws IOException, SQLException {
+        BufferedReader f = new BufferedReader(new FileReader(rootsIdFileName));
+        String s;
+        Scanner scan;
+        ArrayList<Integer> group = new ArrayList<Integer>();
+        int id1;
+        int part;
+
+       System.out.println("Filling ROOTS table");
+        while ((s = f.readLine()) != null) {
+            scan = new Scanner(s);
+            //первое число в строке - часть речи
+            part = scan.nextInt();
+            while (scan.hasNextInt()) {
+                id1 = scan.nextInt();
+                for (int id2 : group) {
+                    if (!db.queryResult("select * from roots where (id1 =" + id1 + ")and(id2=" + id2 + ")and(part=" + part + ")" +
+                            "union select * from roots where (id1 =" + id2 + ")and(id2=" + id1 + ")and(part=" + part + ")").next()) {
+
+                        db.update("insert into roots (id1, id2, part) values (" + id1 + "," + id2 + "," + part + ")");
+                    }
+                }
+                group.add(id1);
+            }
+            group.clear();
+        }
+    }
+
+
+
+    private void addWordsFromDb(String addDbName) throws Exception {
+        try {
+            Database addDb = new Database(addDbName);
+            ResultSet rs;
+            int part;
+            String word;
+
+            System.out.println("Adding words from additional database " + addDbName);
+            rs = addDb.queryResult("select * from words");
+            while (rs.next()) {
+                part = rs.getInt("part");
+                word = rs.getString("word");
+                if (!db.queryResult("select * from words where (word = '" + word + "')and(part= " + part + ")").next()) {
+                    db.update("insert into words (word,part) values ('" + word + "'," + part + ")");
+                }
+            }
+
+            addDb.shutdown();
+
+        } catch (SQLException ex) {
+            System.out.println("could not finish addWordsFromDb");
+            ex.printStackTrace();
+            throw ex;
+        }
+
+
+    }
+
+    //вставка в таблицу paronyms отношений между словами с чередующимися корнями
+    public void insertRootsDistances() throws Exception {
+        ResultSet rs;
+        ResultSet rs2;
+        ResultSet rswords;
+        ArrayList<Integer> rslist = new ArrayList<Integer>(); //слова с корнем rootId1
+        ArrayList<WordFromFile> wordList = new ArrayList<WordFromFile>();
+        int rootId1;
+        int rootId2;
+        WordFromFile word1;
+        WordFromFile word2;
+        int part;
+        int id;
+        int id1;
+        int id2;
+        int dmcode;
+        double q;
+        int counter = 0;
+
+        System.out.println("Adding ROOTS Distances");
+        rs = db.queryResult("select * from roots");
+        while (rs.next()) {
+            counter++;
+            if (counter % 500 == 0) {
+                System.out.println(counter);
+            }
+            rslist.clear();
+            wordList.clear();
+
+            rootId1 = rs.getInt("id1");
+            rootId2 = rs.getInt("id2");
+            part = rs.getInt("part");
+
+            rswords = db.queryResult("select * from words_morphs wm " +
+                    "join words w on w.id = wm.id " +
+                    "where (wm.id_m = " + rootId1 + ")and(w.part=" + part + ")");
+
+            while (rswords.next()) {
+                id = rswords.getInt("id");
+                wordList.add(new WordFromFile
+                        (id, rswords.getString("word"),
+                                rswords.getInt("part"),Query.constructMorphList(db, id)));
+            }
+
+            rswords = db.queryResult("select * from words_morphs wm " +
+                    "join words w on w.id = wm.id " +
+                    "where (wm.id_m = " + rootId2 + ")and(w.part=" + part + ")");
+            while (rswords.next()) {
+                id = rswords.getInt("id");
+                wordList.add(new WordFromFile
+                        (id, rswords.getString("word"),
+                                rswords.getInt("part"),Query.constructMorphList(db, id)));
+            }
+
+            for (int i = 0; i < rslist.size(); i++) {
+                for (int j = i+1; j < rslist.size(); j++) {
+                    word1 = wordList.get(i);
+                    word2 = wordList.get(j);
+
+                    dmcode = getDmCode(word1, word2, Integer.MAX_VALUE, Integer.MAX_VALUE);
+                    if (dmcode != -1) {
+                        q = Distance.countFormula(word1.word, word2.word, Distance.countDistance(word1.word, word2.word, false));
+
+                        if (!(rs2 = db.queryResult("select * from paronyms where " +
+                                "(id1=" + word1.id + ") and(id2=" + word2.id + ") union " +
+                                "select * from paronyms where (id1=" + word2.id + ") and(id2=" + word1.id + ")")).next()) {
+
+                            //добавить в таблицу новую строчку
+                            db.update("INSERT INTO paronyms(id1,id2,dmcode, q) VALUES" +
+                                    "(" + word1.id + "," + word2.id + "," + dmcode + "," + q + ")");
+                        } else {
+                            //Добавить в существующую строку значение dm
+                            id1 = rs2.getInt("id1");
+                            id2 = rs2.getInt("id2");
+                            db.update("update paronyms set dmcode = " + dmcode + ",q = " + q +
+                                    " where (id1=" + id1 + ")and(id2=" + id2 + ")");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
