@@ -25,11 +25,15 @@ dependencies {
     testCompile 'junit:junit:4.+'
 }
 
+// IDE-specific settings
+
 idea.project.ipr {
     withXml { provider ->
         provider.node.appendNode('component', [name: 'uidesigner-configuration']).appendNode('option', [name: 'INSTRUMENT_CLASSES', value: 'false'])
     }
 }
+
+// DB management tasks
 
 import de.undercouch.gradle.tasks.download.Download
 
@@ -43,3 +47,7 @@ task extractDb(type: Sync, dependsOn: 'downloadDb') {
     from zipTree('db/paronym.zip')
     into 'db/paronym'
 }
+
+run.dependsOn extractDb
+distTar.dependsOn extractDb
+distZip.dependsOn extractDb
