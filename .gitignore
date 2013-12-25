@@ -6,3 +6,6 @@
 *.iml
 *.ipr
 *.iws
+build
+out
+db
