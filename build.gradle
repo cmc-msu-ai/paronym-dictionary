@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     compile 'com.intellij:forms_rt:7.0.3'
-    compile 'org.hsqldb:hsqldb:2.0.0'
+    compile 'org.hsqldb:hsqldb:1.8.0.10'
     testCompile 'junit:junit:4.+'
 }
 
