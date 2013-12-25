@@ -51,3 +51,7 @@ task extractDb(type: Sync, dependsOn: 'downloadDb') {
 run.dependsOn extractDb
 distTar.dependsOn extractDb
 distZip.dependsOn extractDb
+
+applicationDistribution.from('db/paronym') {
+    into 'db/paronym'
+}
