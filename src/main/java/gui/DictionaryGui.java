@@ -2,6 +2,7 @@ package gui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+
 import dict.*;
 
 import javax.swing.*;
@@ -10,6 +11,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
+
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
@@ -100,10 +102,14 @@ public class DictionaryGui {
 
 
     public DictionaryGui(GuiCtrl control) {
-
-
         ctrl = control;
         ctrl.regDictionaryGui(this);
+
+        dlBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "1", "2"}));
+        dmBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "1", "2"}));
+        drBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "0", "1", "2", "3"}));
+        qBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"}));
+        partList.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "сущ", "гл", "прил", "нар"}));
 
         //tables
         //@todo закладка
