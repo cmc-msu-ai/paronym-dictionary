@@ -3,13 +3,10 @@ package gui;
 import javax.swing.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Таня
- * Date: 10.02.2009
- * Time: 21:08:03
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: Таня Date: 10.02.2009 Time: 21:08:03 To
+ * change this template use File | Settings | File Templates.
  */
-public class GuiFrame  {
+public class GuiFrame {
     GuiCtrl ctrl;
     JFrame frame;
     AotGUItest aotGUItestForm;
@@ -20,13 +17,13 @@ public class GuiFrame  {
             ctrl = control;
             frame = new JFrame("Словарь паронимов");
 
-//            aotGuiTestFormInit();
+            // aotGuiTestFormInit();
             dictionaryGuiFormInit();
 
-           frame.pack();
-           frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-           frame.setVisible(true);
-         } catch (Exception ex) {
+            frame.pack();
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setVisible(true);
+        } catch (Exception ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
@@ -35,7 +32,7 @@ public class GuiFrame  {
 
     public void aotGuiTestFormInit() throws Exception {
         aotGUItestForm = new AotGUItest(ctrl);
-       frame.setContentPane(aotGUItestForm.mainPanel);
+        frame.setContentPane(aotGUItestForm.mainPanel);
     }
 
     public void dictionaryGuiFormInit() throws Exception {

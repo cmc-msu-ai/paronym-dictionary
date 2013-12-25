@@ -10,11 +10,8 @@ import java.awt.*;
 import java.util.StringTokenizer;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Таня
- * Date: 10.02.2009
- * Time: 15:49:20
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: Таня Date: 10.02.2009 Time: 15:49:20 To
+ * change this template use File | Settings | File Templates.
  */
 public class AotGUItest {
 
@@ -26,13 +23,11 @@ public class AotGUItest {
     private JButton goButton;
     private JTextField reverseField;
 
-
     public AotGUItest(GuiCtrl control) {
 
         ctrl = control;
 
         ctrl.regAotGUItest(this);
-
 
         goButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -45,11 +40,9 @@ public class AotGUItest {
             }
         });
 
-
         reverseField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String word;
-
 
                 textPane1.setText("");
                 gramstrPane.setText("");
@@ -61,8 +54,8 @@ public class AotGUItest {
                     gramstrPane.setText(word);
 
                 } catch (Exception ex) {
-                    textPane1.setText("Could not process your query: " +
-                            wordField.getText() + '\n' + ex.getMessage());
+                    textPane1.setText("Could not process your query: "
+                            + wordField.getText() + '\n' + ex.getMessage());
 
                 }
             }
@@ -83,8 +76,8 @@ public class AotGUItest {
             }
             gramstrPane.setText(gramstr);
         } catch (Exception ex) {
-            textPane1.setText("Could not process your query: " +
-                    wordField.getText());
+            textPane1.setText("Could not process your query: "
+                    + wordField.getText());
 
         }
     }

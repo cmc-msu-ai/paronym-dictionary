@@ -3,17 +3,14 @@ package dict;
 import java.util.ArrayList;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Таня
- * Date: 04.04.2009
- * Time: 7:55:47
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: Таня Date: 04.04.2009 Time: 7:55:47 To change
+ * this template use File | Settings | File Templates.
  */
 public class ParonymList {
-    Word word;                     //исходное слово
-    ArrayList<Paronym> paronyms; //список всех паронимов
-    ArrayList<Paronym> lparonyms;//список буквенных паронимов
-    ArrayList<Paronym> mparonyms;//список морфемных паронимов
+    Word word; // исходное слово
+    ArrayList<Paronym> paronyms; // список всех паронимов
+    ArrayList<Paronym> lparonyms;// список буквенных паронимов
+    ArrayList<Paronym> mparonyms;// список морфемных паронимов
     int size;
     int lsize;
     int msize;
@@ -24,7 +21,7 @@ public class ParonymList {
         lparonyms = new ArrayList<Paronym>();
         mparonyms = new ArrayList<Paronym>();
         for (Paronym p : paronyms) {
-            //@todo fileter by user's params
+            // @todo fileter by user's params
             if (p.params.l_ok) {
                 lparonyms.add(p);
             }
@@ -45,8 +42,7 @@ public class ParonymList {
         return mparonyms;
     }
 
-     public Word getWord() {
+    public Word getWord() {
         return word;
     }
 }
-

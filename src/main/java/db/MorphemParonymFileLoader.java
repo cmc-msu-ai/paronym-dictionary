@@ -14,26 +14,31 @@ import aot.Paradigm;
 import aot.MorphAnException;
 
 /**
- * Осуществляет загрузку в БД словарной информации о морфемных паронимах на основе текстового файла
+ * Осуществляет загрузку в БД словарной информации о морфемных паронимах на
+ * основе текстового файла
  */
 public class MorphemParonymFileLoader extends ParonymFileLoader {
     /**
-     * Файл, в который записываются слова, часть речи которых не определилась автоматически.
+     * Файл, в который записываются слова, часть речи которых не определилась
+     * автоматически.
      */
     BufferedWriter humanTask;
 
     /**
-     * Лог-файл, содержащий информацию об ошибках, возникших при загрузке, и статистику загруженных данных.
+     * Лог-файл, содержащий информацию об ошибках, возникших при загрузке, и
+     * статистику загруженных данных.
      */
     BufferedWriter logfile;
 
     /**
-     * Файл, получаемый из исходного файла морфемных паронимов, используемый при загрузке информации в БД.
+     * Файл, получаемый из исходного файла морфемных паронимов, используемый при
+     * загрузке информации в БД.
      */
     BufferedReader inputFile;
 
     /**
-     * Исходный текстовый файл морфемных паронимов. На его основе создается файл inputFile.
+     * Исходный текстовый файл морфемных паронимов. На его основе создается файл
+     * inputFile.
      */
     BufferedReader initialFile;
 
@@ -43,7 +48,8 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
     String dbName;
 
     /**
-     * Имя дополнительной БД (буквенных паронимов), которая в процессе загрузки сливается с БД морфемных паронимов.
+     * Имя дополнительной БД (буквенных паронимов), которая в процессе загрузки
+     * сливается с БД морфемных паронимов.
      */
     String addDbName;
 
@@ -67,12 +73,9 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
      */
     String rootsFileName;
 
-    public MorphemParonymFileLoader(String dbName,
-                                    String codesFileName,
-                                    String initialFileName,
-                                    String inputFileName,
-                                    String rootsFileName,
-                                    String addDbName) throws Exception {
+    public MorphemParonymFileLoader(String dbName, String codesFileName,
+            String initialFileName, String inputFileName, String rootsFileName,
+            String addDbName) throws Exception {
         super.init(dbName);
         this.dbName = dbName;
         this.codesFileName = codesFileName;
@@ -85,9 +88,11 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
     /**
      * Запуск загрузчика файла морфемных паронимов.
-     * @param args args[0] - имя создаваемой БД (dbName)
-     * args[1] -  имя исходного текстового файла (initialFileName)
-     * args[2] -  имя дополнительной БД (буквенных паронимов) (addDbName)
+     * 
+     * @param args
+     *            args[0] - имя создаваемой БД (dbName) args[1] - имя исходного
+     *            текстового файла (initialFileName) args[2] - имя
+     *            дополнительной БД (буквенных паронимов) (addDbName)
      */
     public static void main(String[] args) {
         MorphemParonymFileLoader loader;
@@ -99,7 +104,8 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         String addDbName = args[2];
 
         try {
-            loader = new MorphemParonymFileLoader(dbName, codesFileName, initialFileName, inputFileName, rootsFileName, addDbName);
+            loader = new MorphemParonymFileLoader(dbName, codesFileName,
+                    initialFileName, inputFileName, rootsFileName, addDbName);
             loader.run();
             loader.unInit();
         } catch (Exception e) {
@@ -109,21 +115,25 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
     /**
      * Процедура составления словаря буквенных и морфемных паронимов.
-     * Выполняется реформатирование исходного файла, загрузка файлов с кодировками грамм. параметров,
-     * загрузка словарных данных из текстового файла в БД, заполнение таблицы чередующихся корней,
-     * добавление паронимических отношений из файла,
-     * автоматическое пополнение морфемных паронимов,
-     * слияние с БД буквенных паронимов,
-     * автоматическое пополнение буквенных паронимов.
-     * @throws Exception ошибка в процедуре загрузки
+     * Выполняется реформатирование исходного файла, загрузка файлов с
+     * кодировками грамм. параметров, загрузка словарных данных из текстового
+     * файла в БД, заполнение таблицы чередующихся корней, добавление
+     * паронимических отношений из файла, автоматическое пополнение морфемных
+     * паронимов, слияние с БД буквенных паронимов, автоматическое пополнение
+     * буквенных паронимов.
+     * 
+     * @throws Exception
+     *             ошибка в процедуре загрузки
      */
     public void run() throws Exception {
         reformatMorphParFile(initialFileName);
         db.createDB();
         loadCodes(codesFileName);
-        loadDataFromFile(inputFileName, CREATE_ROOTS_FILES, INCLUDE_NOT_FOUND_WORDS);
+        loadDataFromFile(inputFileName, CREATE_ROOTS_FILES,
+                INCLUDE_NOT_FOUND_WORDS);
         fillRootsTable(rootsFileName);
-        loadParonymsFromFile(inputFileName, INCLUDE_NOT_FOUND_WORDS, DO_NOT_ALLOW_SING_PLUR_FORMS_MIX);
+        loadParonymsFromFile(inputFileName, INCLUDE_NOT_FOUND_WORDS,
+                DO_NOT_ALLOW_SING_PLUR_FORMS_MIX);
         addAllParonyms(0, 2, 2);
         mergeWithDb(addDbName);
         addAllParonyms(2, 0, 0);
@@ -131,11 +141,15 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
     /**
      * Добавить в БД данные из таблиц words и paronyms базы буквенных паронимов
-     * @param addDbName имя БД буквенных паронимов
-     * @throws Exception ошибка в процедуре загрузки
+     * 
+     * @param addDbName
+     *            имя БД буквенных паронимов
+     * @throws Exception
+     *             ошибка в процедуре загрузки
      */
     private void mergeWithDb(String addDbName) throws Exception {
-        BufferedWriter notfoundFile = new BufferedWriter(new FileWriter("outputFiles\\LetterParonym_notFound.txt"));
+        BufferedWriter notfoundFile = new BufferedWriter(new FileWriter(
+                "outputFiles\\LetterParonym_notFound.txt"));
         ResultSet lrs;
         ResultSet rs;
 
@@ -146,7 +160,7 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
         int counter = 0;
 
-        //words
+        // words
         System.out.println("Merging WORDS");
 
         lrs = ldb.queryResult("select * from words");
@@ -155,36 +169,42 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             if (counter % 10000 == 0) {
                 System.out.println(counter);
             }
-            w = new WordFromFile(lrs.getInt("id"),lrs.getString("word"), lrs.getInt("part"));
-            rs = db.queryResult("select * from words where (word = '" + w.word + "')and(part=" + w.part + ")");
+            w = new WordFromFile(lrs.getInt("id"), lrs.getString("word"),
+                    lrs.getInt("part"));
+            rs = db.queryResult("select * from words where (word = '" + w.word
+                    + "')and(part=" + w.part + ")");
             if (rs.next()) {
                 id = rs.getInt("id");
             } else {
-                db.update("insert into words (word, part) values ('" + w.word + "'," + w.part + ")");
+                db.update("insert into words (word, part) values ('" + w.word
+                        + "'," + w.part + ")");
                 id = db.queryAndGetId("call identity()");
-
 
                 morphAn(w);
                 if (w.aot_id != -1) {
-                    db.update("update words set aot_id = " + w.aot_id + "where id =" + id);
+                    db.update("update words set aot_id = " + w.aot_id
+                            + "where id =" + id);
                 } else {
                     notfoundFile.write(w.word);
                     notfoundFile.newLine();
                 }
                 if (w.numflag != WordFromFile.NOTSET) {
-                    db.update("update words set num = " + w.num + "where id =" + id);
+                    db.update("update words set num = " + w.num + "where id ="
+                            + id);
                 }
                 if (w.genflag != WordFromFile.NOTSET) {
-                    db.update("update words set gen = " + w.gen + "where id =" + id);
+                    db.update("update words set gen = " + w.gen + "where id ="
+                            + id);
                 }
                 if (w.animflag != WordFromFile.NOTSET) {
-                    db.update("update words set anim = " + w.anim + "where id =" + id);
+                    db.update("update words set anim = " + w.anim
+                            + "where id =" + id);
                 }
             }
             ldb.update("update words set mdb_id = " + id + "where id =" + w.id);
         }
 
-        //paronyms
+        // paronyms
         int lid1;
         int lid2;
         int id1;
@@ -218,43 +238,49 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             id2 = rs1.getInt("mdb_id");
             word2 = new WordFromFile(rs1.getString("word"));
 
-            q = Distance.countFormula(word1.word, word2.word, ParonymCoder.getDl(dlcode));
+            q = Distance.countFormula(word1.word, word2.word,
+                    ParonymCoder.getDl(dlcode));
 
-            if (db.queryResult("select * from paronyms where " +
-                    "(id1=" + id1 + ") and(id2=" + id2 + ")").next()) {
-                db.update("update paronyms set dlcode = " + dlcode + ", q= " + q  +
-                        "where (id1 =" + id1 + ")and(id2=" + id2 + ")");
+            if (db.queryResult(
+                    "select * from paronyms where " + "(id1=" + id1
+                            + ") and(id2=" + id2 + ")").next()) {
+                db.update("update paronyms set dlcode = " + dlcode + ", q= "
+                        + q + "where (id1 =" + id1 + ")and(id2=" + id2 + ")");
 
-            } else if (db.queryResult("select * from paronyms where " +
-                    "(id1=" + id2 + ") and(id2=" + id1 + ")").next()) {
-                db.update("update paronyms set dlcode = " + dlcode + ", q= " + q +
-                        "where (id1 =" + id2 + ")and(id2=" + id1 +")");
+            } else if (db.queryResult(
+                    "select * from paronyms where " + "(id1=" + id2
+                            + ") and(id2=" + id1 + ")").next()) {
+                db.update("update paronyms set dlcode = " + dlcode + ", q= "
+                        + q + "where (id1 =" + id2 + ")and(id2=" + id1 + ")");
 
             } else {
-                db.update("insert into paronyms (id1,id2,dlcode, q) values " +
-                                "(" + id1 + "," + id2 + "," + dlcode + "," + q +")");
+                db.update("insert into paronyms (id1,id2,dlcode, q) values "
+                        + "(" + id1 + "," + id2 + "," + dlcode + "," + q + ")");
             }
         }
         notfoundFile.close();
         ldb.shutdown();
     }
 
-
-    private void reformatMorphParFile(String initialFileName) throws IOException, MorphAnException, SQLException {
+    private void reformatMorphParFile(String initialFileName)
+            throws IOException, MorphAnException, SQLException {
         initialFile = new BufferedReader(new FileReader(initialFileName));
-        BufferedWriter resultFile = new BufferedWriter(new FileWriter("inputFiles\\morphParInputFile.txt"));
-        humanTask = new BufferedWriter(new FileWriter("outputFiles\\MorphemLoader_humanTask.txt"));
-        logfile = new BufferedWriter(new FileWriter("outputFiles\\MorphemLoader_logfile.txt"));
+        BufferedWriter resultFile = new BufferedWriter(new FileWriter(
+                "inputFiles\\morphParInputFile.txt"));
+        humanTask = new BufferedWriter(new FileWriter(
+                "outputFiles\\MorphemLoader_humanTask.txt"));
+        logfile = new BufferedWriter(new FileWriter(
+                "outputFiles\\MorphemLoader_logfile.txt"));
         String s;
         ArrayList<WordFromFile> wordList = new ArrayList<WordFromFile>();
         WordFromFile w = new WordFromFile();
 
-        //для статистики
-        int counter = 0;   //счетчик считанных из файла слов
+        // для статистики
+        int counter = 0; // счетчик считанных из файла слов
         int invCount = 0; // cчетчик некорректных слов
 
-        //определение части речи
-        int groupPart = -1; //часть речи группы
+        // определение части речи
+        int groupPart = -1; // часть речи группы
         boolean groupError = false;
         boolean[] posArray = new boolean[GramDecoder.allParts.length];
 
@@ -272,26 +298,28 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
                 s = s.toLowerCase();
 
-                if (s.charAt(0) != ' ') { //1ое слово группы
+                if (s.charAt(0) != ' ') { // 1ое слово группы
 
-                    //обработка предыдущей группы
+                    // обработка предыдущей группы
 
                     if ((groupPart == -1) || groupError) {
                         humanTask.newLine();
-                        //если часть речи не определилась - удалить все слова
+                        // если часть речи не определилась - удалить все слова
                         for (WordFromFile wrd : wordList) {
-                            humanTask.write(wrd.word+ " " + GramDecoder.partIntToStr(wrd.part));
+                            humanTask.write(wrd.word + " "
+                                    + GramDecoder.partIntToStr(wrd.part));
                             humanTask.newLine();
                         }
                         wordList.clear();
                     } else {
-                         //если определилась - присвоить ее всем словам группы
+                        // если определилась - присвоить ее всем словам группы
                         setPosForGroup(wordList, groupPart);
                     }
 
-                    //добавить слова в файл
+                    // добавить слова в файл
                     for (WordFromFile wrd : wordList) {
-                        resultFile.write(wrd.word + " " + wrd.splitWord + " " + wrd.part);
+                        resultFile.write(wrd.word + " " + wrd.splitWord + " "
+                                + wrd.part);
                         resultFile.newLine();
                     }
                     if (!wordList.isEmpty()) {
@@ -303,46 +331,50 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                     wordList.clear();
                 }
 
-                //обработка текущего слова
+                // обработка текущего слова
                 try {
                     s = s.trim();
 
-                    //запомнить часть речи, на случай выброса исключения при разборе
+                    // запомнить часть речи, на случай выброса исключения при
+                    // разборе
                     if (s.endsWith("<av")) {
                         groupPart = GramDecoder.ADVERB;
                     }
 
                     w = makeWordFromFile(s, groupPart);
 
-                    //избавление от омонимов
+                    // избавление от омонимов
                     if (wordIsIn(w, wordList)) {
                         throw new InvalidInputException("Duplicate word: " + s);
                     }
 
-                    //попробовать найти в словаре морф. анализатора
+                    // попробовать найти в словаре морф. анализатора
                     paradigms = MorphAn.analyzeForm(w.word);
 
                     if (!paradigms.isEmpty()) {
-                        //слово найдено. Попробовать определить часть речи.
+                        // слово найдено. Попробовать определить часть речи.
 
-                        //для каждой части речи, найденной для слова,
-                        // объявляется истинным соответствующий этой чр элемент массива
+                        // для каждой части речи, найденной для слова,
+                        // объявляется истинным соответствующий этой чр элемент
+                        // массива
                         fillPosArray(paradigms, posArray);
 
-                        //если истинным явл. только один элемент массива - ч.р. определилась однозначно
+                        // если истинным явл. только один элемент массива - ч.р.
+                        // определилась однозначно
                         w.part = getPosArrayValue(posArray);
-                        if (w.part != -1){
+                        if (w.part != -1) {
                             if ((groupPart == -1)) {
                                 groupPart = w.part;
                             } else if (w.part != groupPart) {
-                                //"эффект кипятильников"
-                                //ошибка входного файла: слова разной части речи попали в 1 группу
+                                // "эффект кипятильников"
+                                // ошибка входного файла: слова разной части
+                                // речи попали в 1 группу
                                 groupError = true;
                             }
                         }
                     }
 
-                    //добавить текущее слово в группу
+                    // добавить текущее слово в группу
                     wordList.add(w);
 
                 } catch (InvalidInputException e) {
@@ -354,9 +386,9 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
                 }
 
-            } //while
+            } // while
 
-            //обработать последнюю группу
+            // обработать последнюю группу
             setPosForGroup(wordList, groupPart);
 
             logStatistics(counter, invCount);
@@ -372,34 +404,35 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         }
     }
 
-
     /*
-    *  Алгоритм:
-    * слово проверяется:
-    *      на правильность разбора (по указаниям автора)
-    *      на наличие в базе АОТ
-    * если проверка не пройдена, слово игнорируется
-    * с помощью АОТ определяется часть речи,
-    * если ч.р. не определяется однозначно сразу для всех слов группы, то все они записываются в файл,
-    *                                      для них ч.р. должна быть определена вручную
-    *
-    * НЕ удаляет слова в форме множ. числа. (т.к. для этого сначала необходимо определить часть речи всей группы)
-    */
-    public void loadDataFromFile(String inputFileName, boolean createRootsFiles, boolean includeNotFoundWords)
+     * Алгоритм: слово проверяется: на правильность разбора (по указаниям
+     * автора) на наличие в базе АОТ если проверка не пройдена, слово
+     * игнорируется с помощью АОТ определяется часть речи, если ч.р. не
+     * определяется однозначно сразу для всех слов группы, то все они
+     * записываются в файл, для них ч.р. должна быть определена вручную
+     * 
+     * НЕ удаляет слова в форме множ. числа. (т.к. для этого сначала необходимо
+     * определить часть речи всей группы)
+     */
+    public void loadDataFromFile(String inputFileName,
+            boolean createRootsFiles, boolean includeNotFoundWords)
             throws SQLException, IOException, MorphAnException {
 
         inputFile = new BufferedReader(new FileReader(inputFileName));
-        logfile = new BufferedWriter(new FileWriter("outputFiles\\MorphemLoader_duplicateWords.txt"));
-        BufferedWriter notfoundFile = new BufferedWriter(new FileWriter("outputFiles\\MorphemLoader_notFound.txt"));
+        logfile = new BufferedWriter(new FileWriter(
+                "outputFiles\\MorphemLoader_duplicateWords.txt"));
+        BufferedWriter notfoundFile = new BufferedWriter(new FileWriter(
+                "outputFiles\\MorphemLoader_notFound.txt"));
 
         String s;
         ArrayList<WordFromFile> wordList = new ArrayList<WordFromFile>();
         WordFromFile w = new WordFromFile();
 
-        //для статистики
-        int counter = 0;   //счетчик считанных из файла слов
+        // для статистики
+        int counter = 0; // счетчик считанных из файла слов
         int invCount = 0; // cчетчик неправильных слов
-        int notFoundCount = 0; //счетчик правильных, но не вставленных в бд слов (из-за несоответствия параметрам)
+        int notFoundCount = 0; // счетчик правильных, но не вставленных в бд
+                               // слов (из-за несоответствия параметрам)
         int nounCount = 0;
         int verbCount = 0;
         int adjCount = 0;
@@ -408,10 +441,18 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
         int groupPart;
 
-        //для чередующихся корней
-        ArrayList<HashSet<Integer>> rootsList = new ArrayList<HashSet<Integer>>(); //список наборов чередующихся корней
-        ArrayList<Integer> rootsPartsList = new ArrayList<Integer>(); //список частей речи для элементов rootsList
-        HashSet<Integer> rootsSet;  //набор чередующихся корней
+        // для чередующихся корней
+        ArrayList<HashSet<Integer>> rootsList = new ArrayList<HashSet<Integer>>(); // список
+                                                                                   // наборов
+                                                                                   // чередующихся
+                                                                                   // корней
+        ArrayList<Integer> rootsPartsList = new ArrayList<Integer>(); // список
+                                                                      // частей
+                                                                      // речи
+                                                                      // для
+                                                                      // элементов
+                                                                      // rootsList
+        HashSet<Integer> rootsSet; // набор чередующихся корней
 
         System.out.println("Loading data from file " + inputFileName);
 
@@ -423,52 +464,55 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                     System.out.println(counter);
                 }
 
-                if (s.isEmpty()) { //конец группы
+                if (s.isEmpty()) { // конец группы
                     if (!wordList.isEmpty()) {
                         groupPart = wordList.get(0).part;
 
-                        //возвращается набор чередующихся корней
+                        // возвращается набор чередующихся корней
                         rootsSet = addWordsToDB(wordList);
-                        if ((rootsSet.size() > 1) && !rootsList.contains(rootsSet)) {
+                        if ((rootsSet.size() > 1)
+                                && !rootsList.contains(rootsSet)) {
                             rootsList.add(rootsSet);
                             rootsPartsList.add(groupPart);
                         }
 
-                        //сбор статистики
+                        // сбор статистики
                         groupCount++;
                         switch (groupPart) {
-                            case GramDecoder.NOUN:
-                                nounCount += wordList.size();
-                                break;
-                            case GramDecoder.VERB:
-                                verbCount += wordList.size();
-                                break;
-                            case GramDecoder.ADJECT:
-                                adjCount += wordList.size();
-                                break;
-                            case GramDecoder.ADVERB:
-                                advCount += wordList.size();
-                                break;
-                            default:
+                        case GramDecoder.NOUN:
+                            nounCount += wordList.size();
+                            break;
+                        case GramDecoder.VERB:
+                            verbCount += wordList.size();
+                            break;
+                        case GramDecoder.ADJECT:
+                            adjCount += wordList.size();
+                            break;
+                        case GramDecoder.ADVERB:
+                            advCount += wordList.size();
+                            break;
+                        default:
                         }
-
 
                     }
                     wordList.clear();
                 } else {
-                    //обработка текущего слова
+                    // обработка текущего слова
                     try {
                         counter++;
                         w = makeWordFromFormattedFile(s);
 
-                        //проверить на отсутствие дубликатов в базе
-                        if (db.queryResult("select * from words where " +
-                                "(word='" + w.word + "')and(part=" + w.part + ")").next()) {
+                        // проверить на отсутствие дубликатов в базе
+                        if (db.queryResult(
+                                "select * from words where " + "(word='"
+                                        + w.word + "')and(part=" + w.part + ")")
+                                .next()) {
                             throw new InvalidInputException(w.word);
                         }
 
-                        //попробовать произвести морф. анализ.
-                        // В случае успеха aot_id != -1, заполняются поля грам. хар-к
+                        // попробовать произвести морф. анализ.
+                        // В случае успеха aot_id != -1, заполняются поля грам.
+                        // хар-к
                         morphAn(w);
 
                         if (w.aot_id == -1) {
@@ -480,7 +524,7 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                             continue;
                         }
 
-                        //добавить текущее слово в группу
+                        // добавить текущее слово в группу
                         wordList.add(w);
 
                     } catch (InvalidInputException e) {
@@ -490,16 +534,17 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                     }
                 }
 
-            } //while
+            } // while
 
             if (createRootsFiles) {
-                 //создать файлы с наборами чередующихся корней
+                // создать файлы с наборами чередующихся корней
                 createRootsFiles(rootsList, rootsPartsList);
             }
 
             logStatistics(counter, invCount, notFoundCount,
-                                includeNotFoundWords ? invCount : (invCount + notFoundCount),
-                                nounCount, verbCount, adjCount, advCount, groupCount);
+                    includeNotFoundWords ? invCount
+                            : (invCount + notFoundCount), nounCount, verbCount,
+                    adjCount, advCount, groupCount);
             logfile.close();
             notfoundFile.close();
             inputFile.close();
@@ -510,9 +555,8 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         }
     }
 
-
-
-    private WordFromFile makeWordFromFormattedFile(String s) throws SQLException, InvalidInputException {
+    private WordFromFile makeWordFromFormattedFile(String s)
+            throws SQLException, InvalidInputException {
         WordFromFile w = new WordFromFile();
         StringTokenizer tok = new StringTokenizer(s);
         try {
@@ -526,9 +570,8 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         return w;
     }
 
-
-
-    private void addMorphs(WordFromFile w) throws SQLException, InvalidInputException {
+    private void addMorphs(WordFromFile w) throws SQLException,
+            InvalidInputException {
         w.morphList = new ArrayList<Morph>();
         char[] str = w.splitWord.toCharArray();
         int len = str.length;
@@ -539,44 +582,45 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         while (i < len) {
             strmorph = "";
             switch (str[i]) {
-                case'-':
-                    type = GramDecoder.PREF;
+            case '-':
+                type = GramDecoder.PREF;
+                i++;
+                while ((i < len) && Character.isLetter(str[i])) {
+                    strmorph = strmorph + str[i];
                     i++;
-                    while ((i < len) && Character.isLetter(str[i])) {
-                        strmorph = strmorph + str[i];
-                        i++;
-                    }
-                    addMorph(strmorph, w, type);
-                    break;
-                case'+':
-                    type = GramDecoder.ROOT;
+                }
+                addMorph(strmorph, w, type);
+                break;
+            case '+':
+                type = GramDecoder.ROOT;
+                i++;
+                while ((i < len) && Character.isLetter(str[i])) {
+                    strmorph = strmorph + str[i];
                     i++;
-                    while ((i < len) && Character.isLetter(str[i])) {
-                        strmorph = strmorph + str[i];
-                        i++;
-                    }
-                    addMorph(strmorph, w, type);
-                    break;
-                case'^':
-                    type = GramDecoder.SUFF;
+                }
+                addMorph(strmorph, w, type);
+                break;
+            case '^':
+                type = GramDecoder.SUFF;
+                i++;
+                while ((i < len) && Character.isLetter(str[i])) {
+                    strmorph = strmorph + str[i];
                     i++;
-                    while ((i < len) && Character.isLetter(str[i])) {
-                        strmorph = strmorph + str[i];
-                        i++;
-                    }
-                    addMorph(strmorph, w, type);
-                    break;
-                case'*':
-                    type = GramDecoder.ENDING;
+                }
+                addMorph(strmorph, w, type);
+                break;
+            case '*':
+                type = GramDecoder.ENDING;
+                i++;
+                while ((i < len) && Character.isLetter(str[i])) {
+                    strmorph = strmorph + str[i];
                     i++;
-                    while ((i < len) && Character.isLetter(str[i])) {
-                        strmorph = strmorph + str[i];
-                        i++;
-                    }
-                    addMorph(strmorph, w, type);
-                    break;
-                default:
-                    throw new InvalidInputException("Word not correctly marked: " + w.splitWord);
+                }
+                addMorph(strmorph, w, type);
+                break;
+            default:
+                throw new InvalidInputException("Word not correctly marked: "
+                        + w.splitWord);
             }
         }
     }
@@ -594,75 +638,78 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             }
         }
 
-
     }
 
-    private boolean trySetGramFields(WordFromFile w, ArrayList<Paradigm> paradigms) {
+    private boolean trySetGramFields(WordFromFile w,
+            ArrayList<Paradigm> paradigms) {
         for (Paradigm p : paradigms) {
-                if (w.part == p.part) {
-                    w.aot_id = p.aot_id;
+            if (w.part == p.part) {
+                w.aot_id = p.aot_id;
 
-                    if (p.params.isEmpty() && p.paramForms.isEmpty()) {
-                        //слово с пустой строкой грам. признаков
-                        return true;
-                    }
-
-                    //определить грам. параметры
-                    if (MorphAn.decParam(w, p.params + (p.paramForms.isEmpty() ? "" : p.paramForms.get(0)))) {
-                        //если одна успешная парадигма найдена, остальные не проверяются
-                        return true;
-                    }
+                if (p.params.isEmpty() && p.paramForms.isEmpty()) {
+                    // слово с пустой строкой грам. признаков
+                    return true;
                 }
+
+                // определить грам. параметры
+                if (MorphAn.decParam(w, p.params
+                        + (p.paramForms.isEmpty() ? "" : p.paramForms.get(0)))) {
+                    // если одна успешная парадигма найдена, остальные не
+                    // проверяются
+                    return true;
+                }
+            }
         }
         w.aot_id = -1;
         return false;
     }
 
-
-
-
-    private HashSet<Integer> addWordsToDB(ArrayList<WordFromFile> list) throws SQLException, IOException {
+    private HashSet<Integer> addWordsToDB(ArrayList<WordFromFile> list)
+            throws SQLException, IOException {
         HashSet<Integer> rootsSet = new HashSet<Integer>();
         int id_m;
 
-
-        //считается, что список уже проверен на отсутствие дубликатов в бд
+        // считается, что список уже проверен на отсутствие дубликатов в бд
         for (WordFromFile w : list) {
 
-            //add word and morphs
-            db.update("INSERT INTO words(word, part) " +
-                    "VALUES('" + w.word + "'," + w.part + ")");
+            // add word and morphs
+            db.update("INSERT INTO words(word, part) " + "VALUES('" + w.word
+                    + "'," + w.part + ")");
 
             w.id = db.queryAndGetId("call identity()");
 
             for (int k = 0; k < w.morphList.size(); k++) {
                 id_m = w.morphList.get(k).id_m;
-                db.update("insert into words_morphs (id, n, id_m)" +
-                        "values (" + w.id + "," + k + "," + id_m + ")");
+                db.update("insert into words_morphs (id, n, id_m)" + "values ("
+                        + w.id + "," + k + "," + id_m + ")");
                 if (w.morphList.get(k).type == GramDecoder.ROOT) {
                     rootsSet.add(id_m);
                 }
             }
             if (w.aot_id != -1) {
-                db.update("update words set aot_id = " + w.aot_id + "where id =" + w.id);
+                db.update("update words set aot_id = " + w.aot_id
+                        + "where id =" + w.id);
             }
             if (w.numflag != WordFromFile.NOTSET) {
-                db.update("update words set num = " + w.num + "where id =" + w.id);
+                db.update("update words set num = " + w.num + "where id ="
+                        + w.id);
             }
             if (w.genflag != WordFromFile.NOTSET) {
-                db.update("update words set gen = " + w.gen + "where id =" + w.id);
+                db.update("update words set gen = " + w.gen + "where id ="
+                        + w.id);
             }
             if (w.animflag != WordFromFile.NOTSET) {
-                db.update("update words set anim = " + w.anim + "where id =" + w.id);
+                db.update("update words set anim = " + w.anim + "where id ="
+                        + w.id);
             }
         }
 
         return rootsSet;
     }
 
-    private void logStatistics(int counter, int invCount, int notfoundCount, int skipCount,
-                               int nounCount, int verbCount,
-                               int adjCount, int advCount, int groupCount) throws IOException {
+    private void logStatistics(int counter, int invCount, int notfoundCount,
+            int skipCount, int nounCount, int verbCount, int adjCount,
+            int advCount, int groupCount) throws IOException {
 
         logfile.newLine();
         logfile.write("СТАТИСТИКА");
@@ -698,7 +745,8 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         logfile.newLine();
     }
 
-    private void loadParonymsFromFile(String inputFileName, boolean includeNotFoundWords, boolean allowSingPlurFormsMix )
+    private void loadParonymsFromFile(String inputFileName,
+            boolean includeNotFoundWords, boolean allowSingPlurFormsMix)
             throws Exception {
         inputFile = new BufferedReader(new FileReader(inputFileName));
         ResultSet rs;
@@ -724,27 +772,44 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                     System.out.println(counter);
                 }
 
-
-                if (s.isEmpty()) { //конец группы
+                if (s.isEmpty()) { // конец группы
                     if (!wordList.isEmpty()) {
-                        //сопоставить каждый с каждым
+                        // сопоставить каждый с каждым
                         for (int i = 0; i < wordList.size(); i++) {
                             w1 = wordList.get(i);
                             for (int j = 0; j < i; j++) {
                                 w2 = wordList.get(j);
-                                if (!allowSingPlurFormsMix && (w1.num != w2.num) && (w1.num != -1) && (w2.num != -1)) {
+                                if (!allowSingPlurFormsMix
+                                        && (w1.num != w2.num) && (w1.num != -1)
+                                        && (w2.num != -1)) {
                                     continue;
                                 }
-                                dmcode = getDmCode(w1, w2, Integer.MAX_VALUE, Integer.MAX_VALUE);
+                                dmcode = getDmCode(w1, w2, Integer.MAX_VALUE,
+                                        Integer.MAX_VALUE);
                                 if (dmcode != -1) {
-                                    q = Distance.countFormula(w1.word, w2.word, Distance.countDistance(w1.word, w2.word, false));
-                                    if (!db.queryResult("select * from paronyms where " +
-                                            "(id1=" + w1.id + ") and(id2=" + w2.id + ") union " +
-                                            "select * from paronyms where (id1=" + w2.id + ") and(id2=" + w1.id + ")").next()
-                                            ) {
-                                      
-                                        db.update("INSERT INTO paronyms(id1,id2,dmcode,q) " +
-                                            "VALUES(" + w1.id + "," + w2.id + "," + dmcode + "," + q + ")");
+                                    q = Distance.countFormula(w1.word, w2.word,
+                                            Distance.countDistance(w1.word,
+                                                    w2.word, false));
+                                    if (!db.queryResult(
+                                            "select * from paronyms where "
+                                                    + "(id1="
+                                                    + w1.id
+                                                    + ") and(id2="
+                                                    + w2.id
+                                                    + ") union "
+                                                    + "select * from paronyms where (id1="
+                                                    + w2.id + ") and(id2="
+                                                    + w1.id + ")").next()) {
+
+                                        db.update("INSERT INTO paronyms(id1,id2,dmcode,q) "
+                                                + "VALUES("
+                                                + w1.id
+                                                + ","
+                                                + w2.id
+                                                + ","
+                                                + dmcode
+                                                + ","
+                                                + q + ")");
 
                                     }
 
@@ -761,38 +826,41 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
                     tok.nextToken();
                     part = new Integer(tok.nextToken());
 
-                    rs = db.queryResult
-                            ("select * from words where (word = '" + word + "')and(part = " + part + ")");
+                    rs = db.queryResult("select * from words where (word = '"
+                            + word + "')and(part = " + part + ")");
                     if (!rs.next()) {
                         continue;
                     }
                     id = rs.getInt("id");
-                    w = new WordFromFile(id, word, part, Query.constructMorphList(db, id));
-                    w.aot_id = rs.getObject("aot_id") == null ? -1 : rs.getInt("aot_id");
+                    w = new WordFromFile(id, word, part,
+                            Query.constructMorphList(db, id));
+                    w.aot_id = rs.getObject("aot_id") == null ? -1 : rs
+                            .getInt("aot_id");
                     w.num = rs.getObject("num") == null ? -1 : rs.getInt("num");
 
                     if (!includeNotFoundWords && (w.aot_id == -1)) {
                         continue;
                     }
 
-                    //добавить текущее слово в группу
+                    // добавить текущее слово в группу
                     wordList.add(w);
                 }
             } catch (NoSuchElementException e) {
             }
 
-        } //while
-
-
+        } // while
 
     }
 
-    private void createRootsFiles(ArrayList<HashSet<Integer>> rootsList, ArrayList<Integer> rootsPartsList) throws IOException, SQLException {
+    private void createRootsFiles(ArrayList<HashSet<Integer>> rootsList,
+            ArrayList<Integer> rootsPartsList) throws IOException, SQLException {
 
-        BufferedWriter rootsFile = new BufferedWriter(new FileWriter("outputFiles\\roots_groups.txt"));
-        BufferedWriter rootsIdFile = new BufferedWriter(new FileWriter("inputFiles\\rootsId_groups.txt"));
+        BufferedWriter rootsFile = new BufferedWriter(new FileWriter(
+                "outputFiles\\roots_groups.txt"));
+        BufferedWriter rootsIdFile = new BufferedWriter(new FileWriter(
+                "inputFiles\\rootsId_groups.txt"));
         ResultSet rs;
-        double counter = 0; //для подсчета среднего числа корней в группе
+        double counter = 0; // для подсчета среднего числа корней в группе
         int i = 0;
         int part;
 
@@ -805,7 +873,7 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             for (int id : set) {
                 rs = db.queryResult("select * from morphs where id_m =" + id);
                 rs.next();
-                //первое число в строке - часть речи
+                // первое число в строке - часть речи
                 rootsFile.write(rs.getString("morph") + " ");
                 rootsIdFile.write(id + " ");
             }
@@ -846,34 +914,37 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
     }
 
     private void fillPosArray(ArrayList<Paradigm> paradigms, boolean[] posArray) {
-            Arrays.fill(posArray, false);
-            for (Paradigm w : paradigms) {
-                if (w.part != -1) {
-                    posArray[w.part] = true;
-                }
-
+        Arrays.fill(posArray, false);
+        for (Paradigm w : paradigms) {
+            if (w.part != -1) {
+                posArray[w.part] = true;
             }
-        }
 
-
-    private void setPosForGroup(ArrayList<WordFromFile> parlist, int groupPart) throws SQLException {
-
-        for (WordFromFile wrd : parlist) {
-            wrd.part = groupPart;
-//            db.update("update words set part = " + groupPart + " where id = " + wrd.id);   //@todo ?????
         }
     }
 
-    WordFromFile makeWordFromFile(String s, int part) throws InvalidInputException, SQLException {
+    private void setPosForGroup(ArrayList<WordFromFile> parlist, int groupPart)
+            throws SQLException {
+
+        for (WordFromFile wrd : parlist) {
+            wrd.part = groupPart;
+            // db.update("update words set part = " + groupPart + " where id = "
+            // + wrd.id); //@todo ?????
+        }
+    }
+
+    WordFromFile makeWordFromFile(String s, int part)
+            throws InvalidInputException, SQLException {
 
         int len = s.length();
         char[] str = s.toCharArray();
         WordFromFile w = new WordFromFile();
 
-        boolean pref = true; //определяет, как интерпретировать знак '-' (до корня - префикс, после - суффикс)
-        int i = 0; //номер позиции
+        boolean pref = true; // определяет, как интерпретировать знак '-' (до
+                             // корня - префикс, после - суффикс)
+        int i = 0; // номер позиции
 
-        //для проверки правильности разбора
+        // для проверки правильности разбора
         int rootcount = 0;
         int endcount = 0;
         int prefcount = 0;
@@ -885,70 +956,71 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             while (i < len) {
 
                 switch (str[i]) {
-                    case'-':
-                        if (pref) {
-                            prefcount++;
-                            i = getMorph(i + 1, str, w, GramDecoder.PREF, false);
-                        } else if (suffAfterEnd) {
-                            str[i] = '^';
-                            suffcount++;
-                            i = getMorph(i + 1, str, w, GramDecoder.SUFF, true);
+                case '-':
+                    if (pref) {
+                        prefcount++;
+                        i = getMorph(i + 1, str, w, GramDecoder.PREF, false);
+                    } else if (suffAfterEnd) {
+                        str[i] = '^';
+                        suffcount++;
+                        i = getMorph(i + 1, str, w, GramDecoder.SUFF, true);
+                    } else {
+                        str[i] = '^';
+                        suffcount++;
+                        i = getMorph(i + 1, str, w, GramDecoder.SUFF, false);
+                    }
+
+                    break;
+
+                case '+':
+                    pref = false;
+                    rootcount++;
+                    i = getMorph(i + 1, str, w, GramDecoder.ROOT, false);
+                    break;
+                case '*':
+                    suffAfterEnd = true;
+                    endcount++;
+                    i = getMorph(i + 1, str, w, GramDecoder.ENDING, false);
+                    break;
+                case '<':
+                    // @todo случай неправильных вх. данных (возможен выход за
+                    // гр. массива)
+                    switch (str[i + 1]) {
+                    case 's':
+                        w.part = 0;
+                        break;
+                    case 'v':
+                        w.part = 1;
+                        break;
+                    case 'a':
+                        if (str[i + 2] == 'j') {
+                            w.part = 2;
                         } else {
-                            str[i] = '^';
-                            suffcount++;
-                            i = getMorph(i + 1, str, w, GramDecoder.SUFF, false);
+                            w.part = 3;
                         }
-
-                        break;
-
-                    case'+':
-                        pref = false;
-                        rootcount++;
-                        i = getMorph(i + 1, str, w, GramDecoder.ROOT, false);
-                        break;
-                    case'*':
-                        suffAfterEnd = true;
-                        endcount++;
-                        i = getMorph(i + 1, str, w, GramDecoder.ENDING, false);
-                        break;
-                    case'<':
-                        //@todo случай неправильных вх. данных (возможен выход за гр. массива)
-                        switch (str[i + 1]) {
-                            case's':
-                                w.part = 0;
-                                break;
-                            case'v':
-                                w.part = 1;
-                                break;
-                            case'a':
-                                if (str[i + 2] == 'j') {
-                                    w.part = 2;
-                                } else {
-                                    w.part = 3;
-                                }
-                                break;
-                            default:
-                                throw new InvalidInputException("Unknown part of speech: " + str);
-                        }
-                        len = i;
                         break;
                     default:
-                        if (i == 0) {
-                            //означает, что слово не полностью разобрано
-                            throw new InvalidInputException("Word not correctly marked: ");
-                        }
+                        throw new InvalidInputException(
+                                "Unknown part of speech: " + str);
+                    }
+                    len = i;
+                    break;
+                default:
+                    if (i == 0) {
+                        // означает, что слово не полностью разобрано
+                        throw new InvalidInputException(
+                                "Word not correctly marked: ");
+                    }
                 }
-
 
                 i++;
             }
 
             if (part == GramDecoder.ADVERB) {
-                //для корректной проверки разбора наречий
+                // для корректной проверки разбора наречий
                 w.part = part;
             }
             checkMorphCount(w.part, prefcount, rootcount, suffcount, endcount);
-
 
             char[] splitWord = new char[s.length()];
             int j = 0;
@@ -964,42 +1036,49 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
 
             }
 
-
             w.splitWord = new String(splitWord, 0, j);
         } catch (InvalidInputException e) {
             throw new InvalidInputException(e.getMessage() + s);
         }
 
-
         return w;
     }
 
     /**
-     * считывает морф. цифры игнорируются.
-     * добавляет его к полю word текущего слова.
+     * считывает морф. цифры игнорируются. добавляет его к полю word текущего
+     * слова.
      * <p/>
-     * вариант 1 (проверяет, есть ли морф в таблице морфов. если нет - бросает исключение)
-     * вариант 2(подразумевается, что исходный файл содержит только правильные морфы.
-     * добавляет новый морф в таблицу морфов, если его там еще нет)
-     * добавляет Id морфа в список morphList текущего слова
-     *
-     * @param i            текущая позиция в массиве str
-     * @param str          массив, содержащий текущее слово
-     * @param w            текущее слово
-     * @param type         тип считываемого морфа
-     * @param suffAfterEnd является ли считываемый морф суффиксом, следующим после окончания
+     * вариант 1 (проверяет, есть ли морф в таблице морфов. если нет - бросает
+     * исключение) вариант 2(подразумевается, что исходный файл содержит только
+     * правильные морфы. добавляет новый морф в таблицу морфов, если его там еще
+     * нет) добавляет Id морфа в список morphList текущего слова
+     * 
+     * @param i
+     *            текущая позиция в массиве str
+     * @param str
+     *            массив, содержащий текущее слово
+     * @param w
+     *            текущее слово
+     * @param type
+     *            тип считываемого морфа
+     * @param suffAfterEnd
+     *            является ли считываемый морф суффиксом, следующим после
+     *            окончания
      * @return номер последней позиции считанного морфа
-     * @throws InvalidInputException неправильный разбор слова
-     * @throws SQLException          ошибка при работе с базой данных
+     * @throws InvalidInputException
+     *             неправильный разбор слова
+     * @throws SQLException
+     *             ошибка при работе с базой данных
      */
-    int getMorph(int i, char[] str,  WordFromFile w, int type, boolean suffAfterEnd) throws InvalidInputException {
+    int getMorph(int i, char[] str, WordFromFile w, int type,
+            boolean suffAfterEnd) throws InvalidInputException {
 
         String strmorph;
 
         int len = str.length;
         int j = 0;
 
-        //@todo не проверяется, что буква кириллическая!!!
+        // @todo не проверяется, что буква кириллическая!!!
         while ((i < len) && (Character.isLetter(str[i]))) {
 
             i++;
@@ -1007,62 +1086,74 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         }
         strmorph = new String(str, i - j, j);
 
-        //суффикс, следующий после окончания. Мб только "сь" или "ся"
-        if (suffAfterEnd && (!strmorph.equals("сь")) && (!strmorph.equals("ся"))) {
-            throw new InvalidInputException("Suffix after ending. " + strmorph + " ");
+        // суффикс, следующий после окончания. Мб только "сь" или "ся"
+        if (suffAfterEnd && (!strmorph.equals("сь"))
+                && (!strmorph.equals("ся"))) {
+            throw new InvalidInputException("Suffix after ending. " + strmorph
+                    + " ");
         }
 
         // проверка морфа на правильность
         checkMorph(strmorph, type);
 
-        w.word = w.word.concat(strmorph);  //поэтапное заполнение;
+        w.word = w.word.concat(strmorph); // поэтапное заполнение;
 
-        return i - 1;  //return position of the last symbol in morph
+        return i - 1; // return position of the last symbol in morph
     }
 
-    private void addMorph(String strmorph, WordFromFile w, int type) throws SQLException {
+    private void addMorph(String strmorph, WordFromFile w, int type)
+            throws SQLException {
         int id;
 
-        if ((id = db.queryAndGetId("select * from morphs where " +
-                    "(morph='" + strmorph + "')and(type=" + type + ")")) == -1) {
+        if ((id = db.queryAndGetId("select * from morphs where " + "(morph='"
+                + strmorph + "')and(type=" + type + ")")) == -1) {
 
-                //в таблице морфов такого еще нет - добавить.
-                db.update("INSERT INTO morphs(morph,type) VALUES ('" + strmorph + "'," + type + ")");
-                id = db.queryAndGetId("call identity()");
-            }
+            // в таблице морфов такого еще нет - добавить.
+            db.update("INSERT INTO morphs(morph,type) VALUES ('" + strmorph
+                    + "'," + type + ")");
+            id = db.queryAndGetId("call identity()");
+        }
         w.morphList.add(new Morph(id, type, strmorph));
     }
 
-    private void checkMorph(String morph, int type) throws InvalidInputException {
+    private void checkMorph(String morph, int type)
+            throws InvalidInputException {
         int l = morph.length();
         switch (type) {
-            case GramDecoder.PREF:
-                if ((l > 7) || (l < 1)) {
-                    throw new InvalidInputException("CheckMorph. Prefix empty or longer than 7 symbols: " + morph + " in ");
-                }
-                break;
-            case GramDecoder.ROOT:
-                if ((l > 10)|| (l < 1)) {
-                    throw new InvalidInputException("" +
-                            "CheckMorph. Root empty or longer than 10 symbols: " + morph + " in ");
-                }
-                break;
-            case GramDecoder.SUFF:
-                if ((l > 5)|| (l < 1)) {
-                    throw new InvalidInputException("CheckMorph. Suffix empty or longer than 5 symbols: " + morph + " in ");
-                }
-                break;
-            case GramDecoder.ENDING:
-                break;
+        case GramDecoder.PREF:
+            if ((l > 7) || (l < 1)) {
+                throw new InvalidInputException(
+                        "CheckMorph. Prefix empty or longer than 7 symbols: "
+                                + morph + " in ");
+            }
+            break;
+        case GramDecoder.ROOT:
+            if ((l > 10) || (l < 1)) {
+                throw new InvalidInputException(""
+                        + "CheckMorph. Root empty or longer than 10 symbols: "
+                        + morph + " in ");
+            }
+            break;
+        case GramDecoder.SUFF:
+            if ((l > 5) || (l < 1)) {
+                throw new InvalidInputException(
+                        "CheckMorph. Suffix empty or longer than 5 symbols: "
+                                + morph + " in ");
+            }
+            break;
+        case GramDecoder.ENDING:
+            break;
 
         }
     }
 
-    private void checkMorphCount(int part, int pref, int root, int suff, int end) throws InvalidInputException {
+    private void checkMorphCount(int part, int pref, int root, int suff, int end)
+            throws InvalidInputException {
         if (root != 1) {
             throw new InvalidInputException("Too many/few roots: " + root + " ");
         } else if ((part == GramDecoder.ADVERB) ? (end != 0) : (end != 1)) {
-            throw new InvalidInputException("Too many/few endings: " + end + " ");
+            throw new InvalidInputException("Too many/few endings: " + end
+                    + " ");
         } else if (pref > 3) {
             throw new InvalidInputException("Too many prefixes" + pref + " ");
         } else if (suff > 6) {
@@ -1070,13 +1161,10 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         }
     }
 
-
-
-
-
-   
-   //заполняет таблицу ROOTS данными о чередующихся корнях. Данные берутся из файла с именем rootsIdFileName
-    public void fillRootsTable(String rootsIdFileName) throws IOException, SQLException {
+    // заполняет таблицу ROOTS данными о чередующихся корнях. Данные берутся из
+    // файла с именем rootsIdFileName
+    public void fillRootsTable(String rootsIdFileName) throws IOException,
+            SQLException {
         BufferedReader f = new BufferedReader(new FileReader(rootsIdFileName));
         String s;
         Scanner scan;
@@ -1084,18 +1172,24 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         int id1;
         int part;
 
-       System.out.println("Filling ROOTS table");
+        System.out.println("Filling ROOTS table");
         while ((s = f.readLine()) != null) {
             scan = new Scanner(s);
-            //первое число в строке - часть речи
+            // первое число в строке - часть речи
             part = scan.nextInt();
             while (scan.hasNextInt()) {
                 id1 = scan.nextInt();
                 for (int id2 : group) {
-                    if (!db.queryResult("select * from roots where (id1 =" + id1 + ")and(id2=" + id2 + ")and(part=" + part + ")" +
-                            "union select * from roots where (id1 =" + id2 + ")and(id2=" + id1 + ")and(part=" + part + ")").next()) {
+                    if (!db.queryResult(
+                            "select * from roots where (id1 =" + id1
+                                    + ")and(id2=" + id2 + ")and(part=" + part
+                                    + ")"
+                                    + "union select * from roots where (id1 ="
+                                    + id2 + ")and(id2=" + id1 + ")and(part="
+                                    + part + ")").next()) {
 
-                        db.update("insert into roots (id1, id2, part) values (" + id1 + "," + id2 + "," + part + ")");
+                        db.update("insert into roots (id1, id2, part) values ("
+                                + id1 + "," + id2 + "," + part + ")");
                     }
                 }
                 group.add(id1);
@@ -1104,8 +1198,6 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
         }
     }
 
-
-
     private void addWordsFromDb(String addDbName) throws Exception {
         try {
             Database addDb = new Database(addDbName);
@@ -1113,13 +1205,17 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             int part;
             String word;
 
-            System.out.println("Adding words from additional database " + addDbName);
+            System.out.println("Adding words from additional database "
+                    + addDbName);
             rs = addDb.queryResult("select * from words");
             while (rs.next()) {
                 part = rs.getInt("part");
                 word = rs.getString("word");
-                if (!db.queryResult("select * from words where (word = '" + word + "')and(part= " + part + ")").next()) {
-                    db.update("insert into words (word,part) values ('" + word + "'," + part + ")");
+                if (!db.queryResult(
+                        "select * from words where (word = '" + word
+                                + "')and(part= " + part + ")").next()) {
+                    db.update("insert into words (word,part) values ('" + word
+                            + "'," + part + ")");
                 }
             }
 
@@ -1131,15 +1227,16 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             throw ex;
         }
 
-
     }
 
-    //вставка в таблицу paronyms отношений между словами с чередующимися корнями
+    // вставка в таблицу paronyms отношений между словами с чередующимися
+    // корнями
     public void insertRootsDistances() throws Exception {
         ResultSet rs;
         ResultSet rs2;
         ResultSet rswords;
-        ArrayList<Integer> rslist = new ArrayList<Integer>(); //слова с корнем rootId1
+        ArrayList<Integer> rslist = new ArrayList<Integer>(); // слова с корнем
+                                                              // rootId1
         ArrayList<WordFromFile> wordList = new ArrayList<WordFromFile>();
         int rootId1;
         int rootId2;
@@ -1167,49 +1264,62 @@ public class MorphemParonymFileLoader extends ParonymFileLoader {
             rootId2 = rs.getInt("id2");
             part = rs.getInt("part");
 
-            rswords = db.queryResult("select * from words_morphs wm " +
-                    "join words w on w.id = wm.id " +
-                    "where (wm.id_m = " + rootId1 + ")and(w.part=" + part + ")");
+            rswords = db.queryResult("select * from words_morphs wm "
+                    + "join words w on w.id = wm.id " + "where (wm.id_m = "
+                    + rootId1 + ")and(w.part=" + part + ")");
 
             while (rswords.next()) {
                 id = rswords.getInt("id");
-                wordList.add(new WordFromFile
-                        (id, rswords.getString("word"),
-                                rswords.getInt("part"),Query.constructMorphList(db, id)));
+                wordList.add(new WordFromFile(id, rswords.getString("word"),
+                        rswords.getInt("part"), Query
+                                .constructMorphList(db, id)));
             }
 
-            rswords = db.queryResult("select * from words_morphs wm " +
-                    "join words w on w.id = wm.id " +
-                    "where (wm.id_m = " + rootId2 + ")and(w.part=" + part + ")");
+            rswords = db.queryResult("select * from words_morphs wm "
+                    + "join words w on w.id = wm.id " + "where (wm.id_m = "
+                    + rootId2 + ")and(w.part=" + part + ")");
             while (rswords.next()) {
                 id = rswords.getInt("id");
-                wordList.add(new WordFromFile
-                        (id, rswords.getString("word"),
-                                rswords.getInt("part"),Query.constructMorphList(db, id)));
+                wordList.add(new WordFromFile(id, rswords.getString("word"),
+                        rswords.getInt("part"), Query
+                                .constructMorphList(db, id)));
             }
 
             for (int i = 0; i < rslist.size(); i++) {
-                for (int j = i+1; j < rslist.size(); j++) {
+                for (int j = i + 1; j < rslist.size(); j++) {
                     word1 = wordList.get(i);
                     word2 = wordList.get(j);
 
-                    dmcode = getDmCode(word1, word2, Integer.MAX_VALUE, Integer.MAX_VALUE);
+                    dmcode = getDmCode(word1, word2, Integer.MAX_VALUE,
+                            Integer.MAX_VALUE);
                     if (dmcode != -1) {
-                        q = Distance.countFormula(word1.word, word2.word, Distance.countDistance(word1.word, word2.word, false));
+                        q = Distance.countFormula(word1.word, word2.word,
+                                Distance.countDistance(word1.word, word2.word,
+                                        false));
 
-                        if (!(rs2 = db.queryResult("select * from paronyms where " +
-                                "(id1=" + word1.id + ") and(id2=" + word2.id + ") union " +
-                                "select * from paronyms where (id1=" + word2.id + ") and(id2=" + word1.id + ")")).next()) {
+                        if (!(rs2 = db
+                                .queryResult("select * from paronyms where "
+                                        + "(id1=" + word1.id + ") and(id2="
+                                        + word2.id + ") union "
+                                        + "select * from paronyms where (id1="
+                                        + word2.id + ") and(id2=" + word1.id
+                                        + ")")).next()) {
 
-                            //добавить в таблицу новую строчку
-                            db.update("INSERT INTO paronyms(id1,id2,dmcode, q) VALUES" +
-                                    "(" + word1.id + "," + word2.id + "," + dmcode + "," + q + ")");
+                            // добавить в таблицу новую строчку
+                            db.update("INSERT INTO paronyms(id1,id2,dmcode, q) VALUES"
+                                    + "("
+                                    + word1.id
+                                    + ","
+                                    + word2.id
+                                    + ","
+                                    + dmcode + "," + q + ")");
                         } else {
-                            //Добавить в существующую строку значение dm
+                            // Добавить в существующую строку значение dm
                             id1 = rs2.getInt("id1");
                             id2 = rs2.getInt("id2");
-                            db.update("update paronyms set dmcode = " + dmcode + ",q = " + q +
-                                    " where (id1=" + id1 + ")and(id2=" + id2 + ")");
+                            db.update("update paronyms set dmcode = " + dmcode
+                                    + ",q = " + q + " where (id1=" + id1
+                                    + ")and(id2=" + id2 + ")");
                         }
                     }
                 }

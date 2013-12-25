@@ -19,11 +19,8 @@ import java.util.*;
 import lingv.GramDecoder;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Таня
- * Date: 03.03.2009
- * Time: 9:23:42
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: Таня Date: 03.03.2009 Time: 9:23:42 To change
+ * this template use File | Settings | File Templates.
  */
 public class DictionaryGui {
     GuiCtrl ctrl;
@@ -41,7 +38,7 @@ public class DictionaryGui {
 
     QueryParameters queryParams;
 
-    //query Parameters JComponents
+    // query Parameters JComponents
     private JCheckBox partBox;
     private JCheckBox genBox;
     private JCheckBox numBox;
@@ -76,8 +73,7 @@ public class DictionaryGui {
     private JComboBox partList;
     private JCheckBox enableDl2Box;
 
-
-    //query Parameters variables
+    // query Parameters variables
     boolean enableForms = false;
 
     int maxdl = -1;
@@ -86,36 +82,40 @@ public class DictionaryGui {
 
     double q = Double.MAX_VALUE;
 
-    //константы для работы с таблицами
+    // константы для работы с таблицами
     final boolean LETTER = true;
     final boolean MORPHEM = false;
 
-
-    //возможно пригодится для истории запросов
+    // возможно пригодится для истории запросов
     ArrayList<ParonymTableModel> modelList = new ArrayList<ParonymTableModel>();
 
     ParonymTableModel letModel = new ParonymTableModel(this);
     ParonymTableModel morphModel = new ParonymTableModel(this);
 
-    private TableRowSorter<ParonymTableModel> letSorter = new TableRowSorter<ParonymTableModel>(letModel);
-    private TableRowSorter<ParonymTableModel> morphSorter = new TableRowSorter<ParonymTableModel>(morphModel);
-
+    private TableRowSorter<ParonymTableModel> letSorter = new TableRowSorter<ParonymTableModel>(
+            letModel);
+    private TableRowSorter<ParonymTableModel> morphSorter = new TableRowSorter<ParonymTableModel>(
+            morphModel);
 
     public DictionaryGui(GuiCtrl control) {
         ctrl = control;
         ctrl.regDictionaryGui(this);
 
-        dlBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "1", "2"}));
-        dmBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "1", "2"}));
-        drBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "0", "1", "2", "3"}));
-        qBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"}));
-        partList.setModel(new DefaultComboBoxModel<String>(new String[]{"-", "сущ", "гл", "прил", "нар"}));
+        dlBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-",
+                "1", "2"}));
+        dmBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-",
+                "1", "2"}));
+        drBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-",
+                "0", "1", "2", "3"}));
+        qBox.setModel(new DefaultComboBoxModel<String>(new String[]{"-",
+                "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9"}));
+        partList.setModel(new DefaultComboBoxModel<String>(new String[]{"-",
+                "сущ", "гл", "прил", "нар"}));
 
-        //tables
-        //@todo закладка
+        // tables
+        // @todo закладка
         letParTable.setModel(letModel);
         morphParTable.setModel(morphModel);
-
 
         letParTable.setRowSorter(letSorter);
         morphParTable.setRowSorter(morphSorter);
@@ -123,7 +123,7 @@ public class DictionaryGui {
         letTabbedPane.removeAll();
         morphTabbedPane.removeAll();
 
-        //listeners
+        // listeners
         findParonymsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 findParonymsAction();
@@ -137,7 +137,6 @@ public class DictionaryGui {
                 }
             }
         });
-
 
         letTabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -158,22 +157,20 @@ public class DictionaryGui {
         letParTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
 
-                letParInfoPane.setText(
-                        letModel.getWordInfo(
-                                letSorter.convertRowIndexToModel(letParTable.getSelectedRow()),
-                                letTabbedPane.getSelectedIndex()));
+                letParInfoPane.setText(letModel.getWordInfo(letSorter
+                        .convertRowIndexToModel(letParTable.getSelectedRow()),
+                        letTabbedPane.getSelectedIndex()));
             }
         });
 
         morphParTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                morphParInfoPane.setText(
-                        morphModel.getWordInfo(
-                                morphSorter.convertRowIndexToModel(morphParTable.getSelectedRow()),
-                                morphTabbedPane.getSelectedIndex()));
+                morphParInfoPane.setText(morphModel.getWordInfo(
+                        morphSorter.convertRowIndexToModel(morphParTable
+                                .getSelectedRow()), morphTabbedPane
+                        .getSelectedIndex()));
             }
         });
-
 
         formsBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -205,16 +202,15 @@ public class DictionaryGui {
             }
         });
 
-
         paramsButton.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                splitPane.setDividerLocation(paramsButton.isSelected() ? 250 : 0);
+                splitPane.setDividerLocation(paramsButton.isSelected() ? 250
+                        : 0);
             }
         });
 
         paramsButton.setSelected(true);
         splitPane.setDividerLocation(0);
-
 
         hideBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -268,15 +264,18 @@ public class DictionaryGui {
             if ((w1 == null) || w2 == null) {
                 word1Pane.setText(compare.form1);
                 word2Pane.setText(compare.form2);
-                comparePane.setText("Редакционное расстояние в буквах: " + compare.dl);
+                comparePane.setText("Редакционное расстояние в буквах: "
+                        + compare.dl);
 
             } else {
                 word1Pane.setText(wordInfo(compare.word1));
                 word2Pane.setText(wordInfo(compare.word2));
-                String dmStr = compare.dm == -1 ? "" : "Редакционное расстояние в морфах: " + compare.dm + "\n";
-                comparePane.setText("Редакционное расстояние в буквах: " + compare.dl + "\n" +
-                        dmStr +
-                        "Различия: \n" + compare.diffStr);
+                String dmStr = compare.dm == -1 ? ""
+                        : "Редакционное расстояние в морфах: " + compare.dm
+                        + "\n";
+                comparePane.setText("Редакционное расстояние в буквах: "
+                        + compare.dl + "\n" + dmStr + "Различия: \n"
+                        + compare.diffStr);
             }
 
         } else {
@@ -310,9 +309,8 @@ public class DictionaryGui {
         return item.equals("-") ? Double.MAX_VALUE : new Double(item);
     }
 
-
     private void findParonymsAction() {
-        ArrayList<ParonymList> paronymLists;//cписок списков паронимов
+        ArrayList<ParonymList> paronymLists;// cписок списков паронимов
         String word;
         if (hideBox.isSelected()) {
             paramsButton.setSelected(false);
@@ -330,41 +328,40 @@ public class DictionaryGui {
                 throw new ParonymsNotFoundException("Слишком длинное слово");
             }
 
-            queryParams = new QueryParameters(
-                    maxdl, maxdm, maxdr, q,
-                    enableForms,
-                    partBox.isSelected(), genBox.isSelected(), numBox.isSelected(),
-                    rootsRelatBox.isSelected(),
-                    prefBox.isSelected(), rootBox.isSelected(), suffBox.isSelected(), endingBox.isSelected(),
-                    enableDl2Box.isSelected(),
-                    false,
-                    true, getListInt((String) partList.getSelectedItem()));
+            queryParams = new QueryParameters(maxdl, maxdm, maxdr, q,
+                    enableForms, partBox.isSelected(), genBox.isSelected(),
+                    numBox.isSelected(), rootsRelatBox.isSelected(),
+                    prefBox.isSelected(), rootBox.isSelected(),
+                    suffBox.isSelected(), endingBox.isSelected(),
+                    enableDl2Box.isSelected(), false, true,
+                    getListInt((String) partList.getSelectedItem()));
             paronymLists = ctrl.executeFindParonymsButton(word, queryParams);
             if (paronymLists.isEmpty()) {
-                //@todo слово не найдено
-                throw new ParonymsNotFoundException("Паронимов к слову «" + word + "» не найдено ");
+                // @todo слово не найдено
+                throw new ParonymsNotFoundException("Паронимов к слову «"
+                        + word + "» не найдено ");
             }
 
-            //паронимы найдены. обновить данные
+            // паронимы найдены. обновить данные
             letTabbedPane.removeAll();
             morphTabbedPane.removeAll();
 
-            //загрузить данные о паронимах в модель
+            // загрузить данные о паронимах в модель
 
             letModel.loadData(paronymLists, LETTER);
-            //отобразить данные по умолчанию (для 1ого варианта заданного слова)
+            // отобразить данные по умолчанию (для 1ого варианта заданного
+            // слова)
             letModel.setDefaultData(LETTER);
 
             morphModel.loadData(paronymLists, MORPHEM);
             morphModel.setDefaultData(MORPHEM);
 
-            //загрузка данных в инфо-панель
+            // загрузка данных в инфо-панель
             for (ParonymList paronymList : paronymLists) {
                 setWordInfo(letTabbedPane, paronymList.getWord(), true);
                 setWordInfo(morphTabbedPane, paronymList.getWord(), false);
 
             }
-
 
         } catch (ParonymsNotFoundException ex1) {
             errorPane.setText(ex1.getMessage());
@@ -377,19 +374,24 @@ public class DictionaryGui {
         JTextPane pane = new JTextPane();
         pane.setText(wordInfo(curWord));
         pane.setEditable(false);
-        tabbedPane.add(curWord.partStr + " (" + (let ?
-                letModel.getParonymCount(tabbedPane.getTabCount()) :
-                morphModel.getParonymCount(tabbedPane.getTabCount()))
-                + ")", pane);
+        tabbedPane.add(
+                curWord.partStr
+                        + " ("
+                        + (let ? letModel.getParonymCount(tabbedPane
+                        .getTabCount()) : morphModel
+                        .getParonymCount(tabbedPane.getTabCount()))
+                        + ")", pane);
 
     }
 
     public String wordInfo(Word curWord) {
         String text = "";
         if (enableForms) {
-            text = text.concat("Словоформа: " + curWord.form + "\n" + curWord.gram + "\n");
+            text = text.concat("Словоформа: " + curWord.form + "\n"
+                    + curWord.gram + "\n");
         }
-        text = text.concat("Норм. форма: " + curWord.word + "\n" + curWord.getWordInfo());
+        text = text.concat("Норм. форма: " + curWord.word + "\n"
+                + curWord.getWordInfo());
         return text;
     }
 
@@ -706,11 +708,10 @@ public class DictionaryGui {
 
 class ParonymTableModel extends AbstractTableModel {
     ArrayList<TableData> paronymLists = new ArrayList<TableData>();
-    //ArrayList<Word> modifiedParonymList;
-    String[] columnNames = {"слово", "ч. р.", "ред. расст.", "q"};
+    // ArrayList<Word> modifiedParonymList;
+    String[] columnNames = { "слово", "ч. р.", "ред. расст.", "q" };
     Object[][] data = new Object[0][4];
     DictionaryGui dictGui;
-
 
     public ParonymTableModel(DictionaryGui dg) {
         dictGui = dg;
@@ -729,16 +730,16 @@ class ParonymTableModel extends AbstractTableModel {
     }
 
     public Class getColumnClass(int columnIndex) {
-        //@todo
+        // @todo
         switch (columnIndex) {
-            case 0:
-                return String.class;
-            case 1:
-                return String.class;
-            case 2:
-                return Integer.class;
-            case 3:
-                return Double.class;
+        case 0:
+            return String.class;
+        case 1:
+            return String.class;
+        case 2:
+            return Integer.class;
+        case 3:
+            return Double.class;
         }
         return String.class;
     }
@@ -747,11 +748,11 @@ class ParonymTableModel extends AbstractTableModel {
         return data[row][col];
     }
 
-
     public void loadData(ArrayList<ParonymList> pLists, boolean let) {
         paronymLists.clear();
         for (ParonymList list : pLists) {
-            paronymLists.add(new TableData(list.getWord(), let ? list.getLparonyms() : list.getMparonyms()));
+            paronymLists.add(new TableData(list.getWord(), let ? list
+                    .getLparonyms() : list.getMparonyms()));
 
         }
 
@@ -759,11 +760,11 @@ class ParonymTableModel extends AbstractTableModel {
 
     public void setData(int listNumber, boolean let) {
         if (!paronymLists.isEmpty() && (listNumber >= 0)) {
-           TableData list = paronymLists.get(listNumber);
+            TableData list = paronymLists.get(listNumber);
             int i = 0;
             data = new Object[list.getSize()][4];
             for (Paronym p : list.getElements()) {
-                //при изменении столбцов таблицы нужно изменить ListComparator
+                // при изменении столбцов таблицы нужно изменить ListComparator
                 data[i][0] = dictGui.getEnableForms() ? p.form : p.word;
                 data[i][1] = p.partStr;
                 data[i][2] = let ? p.params.curDl : p.params.dm;
@@ -779,10 +780,11 @@ class ParonymTableModel extends AbstractTableModel {
         setData(0, let);
     }
 
-    //tabNumber - номер вкладки = номер списка паронимов
+    // tabNumber - номер вкладки = номер списка паронимов
     // rowNumber - номер выделенной строки = номер слова в списке
     public String getWordInfo(int rowNumber, int tabNumber) {
-        return dictGui.wordInfo(paronymLists.get(tabNumber).getElements().get(rowNumber));
+        return dictGui.wordInfo(paronymLists.get(tabNumber).getElements()
+                .get(rowNumber));
 
     }
 
@@ -790,73 +792,51 @@ class ParonymTableModel extends AbstractTableModel {
         return paronymLists.get(listNumber).getSize();
     }
 
-    //возвращает число элементов в списке паронимов
+    // возвращает число элементов в списке паронимов
     public int getCount(int listN) {
         return paronymLists.get(listN).getSize();
     }
 
     /*
-    public void formatList(ArrayList<Word> list, int rowN) {
-        Collections.sort(list, new ListComparator(rowN));
-    }
-
-    //уже не нужно
-    private void clearParonymLists() {
-        for (ArrayList<Word> paronymList : paronymLists) {
-            paronymList.clear();
-        }
-    }
-
-    class ListComparator implements Comparator {
-        int column;
-
-        public ListComparator(int n) {
-            column = n;
-        }
-
-        public int compare(Object w1, Object w2) {
-            Word word1 = (Word) w1;
-            Word word2 = (Word) w2;
-            switch (column) {
-                case 0:
-                    return word1.word.compareTo(word2.word);
-                case 1:
-                    return word1.part.compareTo(word2.part);
-                case 2:
-                    return word1.d > word2.d ? 1 : (word1.d < word2.d ? -1 : 0);
-            }
-            return 0;
-        }
-    }
-
-    */
-
-
+     * public void formatList(ArrayList<Word> list, int rowN) {
+     * Collections.sort(list, new ListComparator(rowN)); }
+     * 
+     * //уже не нужно private void clearParonymLists() { for (ArrayList<Word>
+     * paronymList : paronymLists) { paronymList.clear(); } }
+     * 
+     * class ListComparator implements Comparator { int column;
+     * 
+     * public ListComparator(int n) { column = n; }
+     * 
+     * public int compare(Object w1, Object w2) { Word word1 = (Word) w1; Word
+     * word2 = (Word) w2; switch (column) { case 0: return
+     * word1.word.compareTo(word2.word); case 1: return
+     * word1.part.compareTo(word2.part); case 2: return word1.d > word2.d ? 1 :
+     * (word1.d < word2.d ? -1 : 0); } return 0; } }
+     */
 
 }
 
 class TableData {
-        private Word word;
-        private ArrayList<Paronym> elements;
-        private int size;
+    private Word word;
+    private ArrayList<Paronym> elements;
+    private int size;
 
-        public TableData(Word word, ArrayList<Paronym> elements) {
-            this.word = word;
-            this.elements = elements;
-            size = elements.size();
-        }
-
-         public Word getWord() {
-            return word;
-        }
-
-        public ArrayList<Paronym> getElements() {
-            return elements;
-        }
-
-        public int getSize() {
-            return size;
-        }
+    public TableData(Word word, ArrayList<Paronym> elements) {
+        this.word = word;
+        this.elements = elements;
+        size = elements.size();
     }
 
+    public Word getWord() {
+        return word;
+    }
 
+    public ArrayList<Paronym> getElements() {
+        return elements;
+    }
+
+    public int getSize() {
+        return size;
+    }
+}

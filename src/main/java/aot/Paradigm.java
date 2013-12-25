@@ -41,7 +41,7 @@ public class Paradigm {
     /**
      * набор морф. параметров словоформ, например: {"мр, им, мн", "мр, вн, мн" }
      */
-    public ArrayList<String> paramForms;     //
+    public ArrayList<String> paramForms; //
 
     /**
      * Распечатать парадигму в поток стандартного вывода.

@@ -20,30 +20,40 @@ public class InputFilesStatistics {
 
     /**
      * Запуск подсчета статистики
-     * @param args не используется
+     * 
+     * @param args
+     *            не используется
      */
-   public static void main(String[] args) {
+    public static void main(String[] args) {
         InputFilesStatistics ifs;
 
-        try{
+        try {
             ifs = new InputFilesStatistics();
-            ifs.convertInputFile(new BufferedReader(new FileReader("inputFiles\\morphpar.txt")));
-            ifs.countSingPlurMismatch(new BufferedReader(new FileReader("outputFiles\\convertedMorphpar.txt")));
+            ifs.convertInputFile(new BufferedReader(new FileReader(
+                    "inputFiles\\morphpar.txt")));
+            ifs.countSingPlurMismatch(new BufferedReader(new FileReader(
+                    "outputFiles\\convertedMorphpar.txt")));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Составить файл, содержащий все слова входного файла, которые присутствуют в ед.ч., но не присутств. во множ. ч.
-     * или наоборот
-     * @throws IOException ошибка работы с файлами
-     * @param inputFile конвертир. файл
+     * Составить файл, содержащий все слова входного файла, которые присутствуют
+     * в ед.ч., но не присутств. во множ. ч. или наоборот
+     * 
+     * @throws IOException
+     *             ошибка работы с файлами
+     * @param inputFile
+     *            конвертир. файл
      * @throws aot.MorphAnException
      */
-    private void countSingPlurMismatch(BufferedReader inputFile) throws IOException, MorphAnException {
-        BufferedWriter outputFile1 = new BufferedWriter(new FileWriter("outputFiles\\NonPaired.txt"));
-        BufferedWriter outputFile2 = new BufferedWriter(new FileWriter("outputFiles\\Paired.txt"));
+    private void countSingPlurMismatch(BufferedReader inputFile)
+            throws IOException, MorphAnException {
+        BufferedWriter outputFile1 = new BufferedWriter(new FileWriter(
+                "outputFiles\\NonPaired.txt"));
+        BufferedWriter outputFile2 = new BufferedWriter(new FileWriter(
+                "outputFiles\\Paired.txt"));
         ArrayList<Paradigm> wordlist = new ArrayList<Paradigm>();
         String s;
         StringTokenizer tok;
@@ -56,8 +66,8 @@ public class InputFilesStatistics {
 
         while ((s = inputFile.readLine()) != null) {
             if (s.isEmpty()) {
-                //end of group
-                //add all words without pair to outputFile1
+                // end of group
+                // add all words without pair to outputFile1
                 for (Paradigm w : wordlist) {
                     outputFile1.write(w.form);
                     outputFile1.newLine();
@@ -85,7 +95,7 @@ public class InputFilesStatistics {
             if ((pairWord = findPairWord(word, wordlist)) != null) {
                 wordlist.remove(pairWord);
 
-                //add all pair words to outputFile2
+                // add all pair words to outputFile2
                 outputFile2.write(word.norm);
                 outputFile2.newLine();
                 counter2++;
@@ -104,8 +114,11 @@ public class InputFilesStatistics {
 
     /**
      * Найти в списке wordlist слово, принадлежащее той же парадигме, что и word
-     * @param word слово
-     * @param wordlist список
+     * 
+     * @param word
+     *            слово
+     * @param wordlist
+     *            список
      * @return первое подходящее слово или null.
      */
     private Paradigm findPairWord(Paradigm word, ArrayList<Paradigm> wordlist) {
@@ -118,14 +131,20 @@ public class InputFilesStatistics {
     }
 
     /**
-     * Преобразовать входной файл для работы функции countSingPlurMismatch
-     * Для слов определяются части речи и удаляются омонимы
-     * @param inputFile входной файл
-     * @throws java.io.IOException ошибка работы с файлом
-     * @throws aot.MorphAnException ошибка работы морфологического анализатора
+     * Преобразовать входной файл для работы функции countSingPlurMismatch Для
+     * слов определяются части речи и удаляются омонимы
+     * 
+     * @param inputFile
+     *            входной файл
+     * @throws java.io.IOException
+     *             ошибка работы с файлом
+     * @throws aot.MorphAnException
+     *             ошибка работы морфологического анализатора
      */
-    private void convertInputFile(BufferedReader inputFile) throws IOException, MorphAnException {
-        BufferedWriter convertedFile = new BufferedWriter(new FileWriter("outputFiles\\convertedMorphpar.txt"));
+    private void convertInputFile(BufferedReader inputFile) throws IOException,
+            MorphAnException {
+        BufferedWriter convertedFile = new BufferedWriter(new FileWriter(
+                "outputFiles\\convertedMorphpar.txt"));
         String s;
         int counter = 0;
         int groupPart = -1;
@@ -147,23 +166,23 @@ public class InputFilesStatistics {
 
             s = s.toLowerCase();
 
-            if (s.charAt(0) != ' ') { //1ое слово группы
+            if (s.charAt(0) != ' ') { // 1ое слово группы
 
-                //обработка предыдущей группы паронимов
+                // обработка предыдущей группы паронимов
 
                 if ((groupPart != -1) && !groupError) {
-                    //если определилась часть речи
+                    // если определилась часть речи
                     // присвоить ее всем словам группы
                     setPosForGroup(wordlist, groupPart);
 
-                    //записать группу в файл
+                    // записать группу в файл
                     for (WordFromFile wrd : wordlist) {
                         convertedFile.write(wrd.part + " ");
                         convertedFile.write(wrd.word);
                         convertedFile.newLine();
                         countWord++;
                     }
-                    //вставить пустую строку. обозначает конец группы.
+                    // вставить пустую строку. обозначает конец группы.
                     if (!wordlist.isEmpty()) {
                         convertedFile.newLine();
                         countGroup++;
@@ -176,51 +195,53 @@ public class InputFilesStatistics {
                 wordlist.clear();
             }
 
-            //обработка текущего слова
+            // обработка текущего слова
 
             s = s.trim();
 
-            //запомнить часть речи, на случай выброса исключения при разборе
+            // запомнить часть речи, на случай выброса исключения при разборе
             if (s.endsWith("<av")) {
                 groupPart = GramDecoder.ADVERB;
             }
 
             w = makeWordFromFile(s, groupPart);
 
-            //избавление от омонимов
+            // избавление от омонимов
             if (wordIsIn(w, wordlist)) {
                 continue;
             }
 
-            //попробовать найти в АОТ
+            // попробовать найти в АОТ
             paradigms = MorphAn.analyzeForm(w.word);
             if (paradigms.isEmpty()) {
-                //слово не найдено
+                // слово не найдено
                 continue;
             }
 
-            //для каждой части речи, найденной для слова АОТом,
+            // для каждой части речи, найденной для слова АОТом,
             // объявляется истинным соответствующий этой чр элемент массива
             fillPosArray(paradigms, posArray);
 
-            //если истинным явл. только один элемент массива - ч.р. определилась однозначно
+            // если истинным явл. только один элемент массива - ч.р.
+            // определилась однозначно
             w.part = getPosArrayValue(posArray);
             if (w.part != -1) {
                 if ((groupPart == -1)) {
                     groupPart = w.part;
                 } else if (w.part != groupPart) {
-                    //"эффект кипятильников"
-                    //ошибка входного файла: слова разной части речи попали в 1 группу
+                    // "эффект кипятильников"
+                    // ошибка входного файла: слова разной части речи попали в 1
+                    // группу
                     groupError = true;
                 }
             }
 
-            //добавить текущее слово в группу
+            // добавить текущее слово в группу
             wordlist.add(w);
 
-        } //while
+        } // while
 
-        //обработать последнюю группу
+        // обработать последнюю группу
         setPosForGroup(wordlist, groupPart);
         inputFile.close();
 
@@ -251,7 +272,7 @@ public class InputFilesStatistics {
         return new WordFromFile(word, groupPart);
     }
 
-    //copied from MorphemParonymFileLoader
+    // copied from MorphemParonymFileLoader
     private boolean wordIsIn(WordFromFile w, ArrayList<WordFromFile> parlist) {
         for (WordFromFile word : parlist) {
             if (word.word.equals(w.word)) {
@@ -261,7 +282,7 @@ public class InputFilesStatistics {
         return false;
     }
 
-    //copied from MorphemParonymFileLoader
+    // copied from MorphemParonymFileLoader
     private int getPosArrayValue(boolean[] posArray) {
         int part = -1;
         boolean found = false;
@@ -287,7 +308,7 @@ public class InputFilesStatistics {
         }
     }
 
-    private void setPosForGroup(ArrayList<WordFromFile> list, int groupPart){
+    private void setPosForGroup(ArrayList<WordFromFile> list, int groupPart) {
 
         for (WordFromFile wrd : list) {
             wrd.part = groupPart;

@@ -7,8 +7,8 @@ import java.util.ArrayList;
 public class Word {
     public String word;
     public String splitWord;
-    public String gramParams = "";  //строка грам. параметров слова
-    public int aot_id = -1; //id парадигмы в АОТ
+    public String gramParams = ""; // строка грам. параметров слова
+    public int aot_id = -1; // id парадигмы в АОТ
     public int id;
 
     public int part;
@@ -17,27 +17,16 @@ public class Word {
     public int num;
     public int anim;
 
-    //word form info
-    public String form; //словоформа
-    public String gram; //анкод (грам. хар-ки словоформы в кодировке АОТа)
+    // word form info
+    public String form; // словоформа
+    public String gram; // анкод (грам. хар-ки словоформы в кодировке АОТа)
 
     public int rootId;
     public ArrayList<Morph> morphList;
 
-
-    public Word
-            (String word,
-             int id,
-             int aot_id,
-             String splitword,
-             int part,
-             int gen,
-             int num,
-             int anim,
-             String form,
-             String gram,
-             int rootId,
-             ArrayList<Morph> morphList) {
+    public Word(String word, int id, int aot_id, String splitword, int part,
+            int gen, int num, int anim, String form, String gram, int rootId,
+            ArrayList<Morph> morphList) {
 
         this.word = word;
         this.id = id;
@@ -48,10 +37,9 @@ public class Word {
         this.gen = gen;
         this.num = num;
         this.anim = anim;
-        this.gramParams = gramParams.concat(partStr + " " +
-                GramDecoder.getGenStr(gen) + " " +
-                GramDecoder.getNumStr(num) + " " +
-                GramDecoder.getAnimStr(anim));
+        this.gramParams = gramParams.concat(partStr + " "
+                + GramDecoder.getGenStr(gen) + " " + GramDecoder.getNumStr(num)
+                + " " + GramDecoder.getAnimStr(anim));
         this.form = form;
         this.gram = gram;
         this.rootId = rootId;
@@ -59,18 +47,15 @@ public class Word {
 
     }
 
-
-
     public Paronym toParonym(ParonymParameters params) {
         return new Paronym(this, params);
 
     }
 
-
-
     public String getWordInfo() {
-        return (splitWord.isEmpty() ?  this.gramParams : splitWord + "\n" + gramParams) + "\n";
+        return (splitWord.isEmpty() ? this.gramParams : splitWord + "\n"
+                + gramParams)
+                + "\n";
     }
-
 
 }

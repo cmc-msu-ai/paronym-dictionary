@@ -8,36 +8,37 @@ import java.math.BigDecimal;
 
 public class Distance {
 
-  //****************************
-  // Get minimum of three values
-  //****************************
+    // ****************************
+    // Get minimum of three values
+    // ****************************
 
-  private static int Minimum (int a, int b, int c) {
-  int mi;
+    private static int Minimum(int a, int b, int c) {
+        int mi;
 
-    mi = a;
-    if (b < mi) {
-      mi = b;
+        mi = a;
+        if (b < mi) {
+            mi = b;
+        }
+        if (c < mi) {
+            mi = c;
+        }
+        return mi;
+
     }
-    if (c < mi) {
-      mi = c;
-    }
-    return mi;
 
-  }
+    // *****************************
+    // Compute Levenshtein distance
+    // *****************************
 
-  //*****************************
-  // Compute Levenshtein distance
-  //*****************************
-
-    public static int countDistance(ArrayList<Morph> s, ArrayList<Morph> t, boolean dl2) {
+    public static int countDistance(ArrayList<Morph> s, ArrayList<Morph> t,
+            boolean dl2) {
         int sl = s.size();
         int tl = t.size();
         int[] ss = new int[sl];
         int[] tt = new int[tl];
         Morph m;
 
-        if((sl==0) && (tl == 0)){
+        if ((sl == 0) && (tl == 0)) {
             return -1;
         }
 
@@ -60,27 +61,27 @@ public class Distance {
         return countDistance(ss, tt, dl2);
     }
 
-     public static int countDistance(String s, String t, boolean dl2) {
+    public static int countDistance(String s, String t, boolean dl2) {
 
-         int sl = s.length();
-         int tl = t.length();
-         int[] ss = new int[sl];
-         int[] tt = new int[tl];
+        int sl = s.length();
+        int tl = t.length();
+        int[] ss = new int[sl];
+        int[] tt = new int[tl];
 
-         if ((sl == 0) && (tl == 0)) {
-             return -1;
-         }
+        if ((sl == 0) && (tl == 0)) {
+            return -1;
+        }
 
-         for (int i = 0; i < sl; i++) {
-             ss[i] = s.charAt(i);
-         }
+        for (int i = 0; i < sl; i++) {
+            ss[i] = s.charAt(i);
+        }
 
-         for (int i = 0; i < tl; i++) {
-             tt[i] = t.charAt(i);
-         }
+        for (int i = 0; i < tl; i++) {
+            tt[i] = t.charAt(i);
+        }
 
-         return countDistance(ss, tt, dl2);
-     }
+        return countDistance(ss, tt, dl2);
+    }
 
     public static int countDistance(int[] s, int[] t, boolean dl2) {
         int n; // length of s
@@ -102,7 +103,8 @@ public class Distance {
 
     }
 
-    public static int[][] countDistanceMatrix(int[] s, int[] t, int n, int m, boolean dl2) {
+    public static int[][] countDistanceMatrix(int[] s, int[] t, int n, int m,
+            boolean dl2) {
         int d[][]; // matrix
         int i; // iterates through s
         int j; // iterates through t
@@ -110,7 +112,6 @@ public class Distance {
         int t_j; // jth element of t
         int tempd;
         int cost; // cost
-
 
         d = new int[n + 1][m + 1];
 
@@ -146,10 +147,12 @@ public class Distance {
 
                 // Step 6
 
-                d[i][j] = Minimum(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+                d[i][j] = Minimum(d[i - 1][j] + 1, d[i][j - 1] + 1,
+                        d[i - 1][j - 1] + cost);
                 if (dl2) {
-                    if ((i > 1) && (j > 1) && (s_i == t[j - 2]) && ( s[i - 2]== t_j)) {
-                        tempd = d[i-2][j-2] + cost;
+                    if ((i > 1) && (j > 1) && (s_i == t[j - 2])
+                            && (s[i - 2] == t_j)) {
+                        tempd = d[i - 2][j - 2] + cost;
                         d[i][j] = d[i][j] <= tempd ? d[i][j] : tempd;
                     }
                 }
@@ -163,8 +166,10 @@ public class Distance {
         return d[d.length - 1][d[0].length - 1];
     }
 
-    //вернуть элементы, которыми отличаются массивы s и t, по матрице расстояний. матрица дб не пустой.
-    public static ArrayList<ArrayList<Object>> differentElements(int d[][], ArrayList<Object> s, ArrayList<Object> t) {
+    // вернуть элементы, которыми отличаются массивы s и t, по матрице
+    // расстояний. матрица дб не пустой.
+    public static ArrayList<ArrayList<Object>> differentElements(int d[][],
+            ArrayList<Object> s, ArrayList<Object> t) {
         int n = d.length;
         int m = d[0].length;
         Object s_i = null; // ith element of s
@@ -175,7 +180,7 @@ public class Distance {
         int i = n - 1;
         int j = m - 1;
 
-        while(i >= 0) {
+        while (i >= 0) {
             if ((i == 0) && (j == 0)) {
                 break;
             }
@@ -196,7 +201,7 @@ public class Distance {
                     cost = getCost(s_i, t_j);
                 }
                 if ((i != 0) && (d[i - 1][j] + 1 == d[i][j])) {
-                    //вставка j-го элемента из t
+                    // вставка j-го элемента из t
                     pair = new ArrayList<Object>(2);
                     pair.add(s_i);
                     pair.add(null);
@@ -204,7 +209,7 @@ public class Distance {
 
                     i--;
                 } else if ((j != 0) && (d[i][j - 1] + 1 == d[i][j])) {
-                    //удаление i-го элемента из s
+                    // удаление i-го элемента из s
                     pair = new ArrayList<Object>(2);
                     pair.add(null);
                     pair.add(t_j);
@@ -213,7 +218,7 @@ public class Distance {
                     j--;
                 } else if (d[i - 1][j - 1] + cost == d[i][j]) {
                     if (cost == 1) {
-                        //замена j-го элемента из t на i-й элемент s
+                        // замена j-го элемента из t на i-й элемент s
                         pair = new ArrayList<Object>(2);
                         pair.add(s_i);
                         pair.add(t_j);
@@ -241,8 +246,8 @@ public class Distance {
 
     }
 
-
-    public static ArrayList<ArrayList<Morph>> getDiffer(ArrayList<Morph> s, ArrayList<Morph> t) {
+    public static ArrayList<ArrayList<Morph>> getDiffer(ArrayList<Morph> s,
+            ArrayList<Morph> t) {
         ArrayList<Object> so = new ArrayList<Object>();
         for (Morph m : s) {
             so.add(m);
@@ -267,11 +272,11 @@ public class Distance {
 
         ArrayList<Object> so = new ArrayList<Object>();
         for (char c : s.toCharArray()) {
-            so.add((int)c);
+            so.add((int) c);
         }
         ArrayList<Object> to = new ArrayList<Object>();
         for (char c : t.toCharArray()) {
-            to.add((int)c);
+            to.add((int) c);
         }
         ArrayList<ArrayList<Object>> resObj = getObjectDiffer(so, to);
         ArrayList<ArrayList<Integer>> res = new ArrayList<ArrayList<Integer>>();
@@ -285,7 +290,8 @@ public class Distance {
         return res;
     }
 
-    public static ArrayList<ArrayList<Object>> getObjectDiffer(ArrayList<Object> s, ArrayList<Object> t) {
+    public static ArrayList<ArrayList<Object>> getObjectDiffer(
+            ArrayList<Object> s, ArrayList<Object> t) {
         int sl = s.size();
         int tl = t.size();
         ArrayList<ArrayList<Object>> diff = new ArrayList<ArrayList<Object>>();
@@ -294,13 +300,13 @@ public class Distance {
         int[] ss = new int[sl];
         int[] tt = new int[tl];
 
-        if((sl==0) && (tl == 0)){
+        if ((sl == 0) && (tl == 0)) {
             return diff;
         }
 
         if (sl == 0) {
             pair = new ArrayList<Object>(2);
-            for (Object m: t) {
+            for (Object m : t) {
                 pair.add(null);
                 pair.add(m);
             }
@@ -309,7 +315,7 @@ public class Distance {
         }
         if (tl == 0) {
             pair = new ArrayList<Object>(2);
-            for (Object m: s) {
+            for (Object m : s) {
                 pair.add(m);
                 pair.add(null);
             }
@@ -318,8 +324,8 @@ public class Distance {
         }
 
         for (int i = 0; i < sl; i++) {
-                    ss[i] = getElement(s.get(i));
-                }
+            ss[i] = getElement(s.get(i));
+        }
 
         for (int i = 0; i < tl; i++) {
             tt[i] = getElement(t.get(i));
@@ -339,73 +345,38 @@ public class Distance {
         }
     }
 
-    /* не работает
-    //вычислить расстояние в буквах между строками, считая перестановку символов элементарной операцией
-    public static int countDistance2(String s, String t) {
-        return getDiffer2(s, t).size();
-    }
-
-    //построить матрицу преобразования s в t
-    public static ArrayList<ArrayList<Integer>> getDiffer2(String s, String t) {
-        ArrayList<ArrayList<Integer>> diff = getDiffer(s, t);
-        ArrayList<ArrayList<Integer>> diff2 = new ArrayList<ArrayList<Integer>>();
-        ArrayList<Integer> sdiff = new ArrayList<Integer>();
-        ArrayList<Integer> tdiff = new ArrayList<Integer>();
-        ArrayList<Integer> chain = new ArrayList<Integer>();
-        boolean[] indexes = new boolean[diff.size()];
-        Arrays.fill(indexes, false);
-        int head;
-        int curend;
-        int j;
-        ArrayList<Integer> diff2Row;
-        int chainFirst;
-
-
-        for (ArrayList<Integer> pair : diff) {
-            sdiff.add(pair.get(0));
-            tdiff.add(pair.get(1));
-        }
-        //поиск замкнутых цепочек
-        for (int i = 0; i < sdiff.size(); i++) {
-            chain.clear();
-            head = sdiff.get(i);
-            curend = tdiff.get(i);
-            j = i;
-            while (true) {
-                chain.add(j);
-                if (curend == head) {
-                    break;
-                }
-                if (sdiff.contains(curend)) {
-                    j = sdiff.indexOf(curend);
-                    curend = tdiff.get(j);
-                } else {
-                    break;
-                }
-            }
-            if (chain.size() > 1) {
-                for (int k : chain) {
-                    indexes[k] = true;
-                }
-                chainFirst = chain.get(0);
-                for (int k = 1; k < chain.size(); k++) {
-                    diff2Row = new ArrayList<Integer>(2);
-                    diff2Row.add(Character.toUpperCase(sdiff.get(chainFirst)));
-                    diff2Row.add(Character.toUpperCase(sdiff.get(k)));
-                    diff2.add(diff2Row);
-                }
-            }
-
-        }
-        for (int k = 0; k < indexes.length; k++) {
-            if (!indexes[k]) {
-                diff2.add(diff.get(k));
-            }
-        }
-        return diff2;
-    }
-*/
-
+    /*
+     * не работает //вычислить расстояние в буквах между строками, считая
+     * перестановку символов элементарной операцией public static int
+     * countDistance2(String s, String t) { return getDiffer2(s, t).size(); }
+     * 
+     * //построить матрицу преобразования s в t public static
+     * ArrayList<ArrayList<Integer>> getDiffer2(String s, String t) {
+     * ArrayList<ArrayList<Integer>> diff = getDiffer(s, t);
+     * ArrayList<ArrayList<Integer>> diff2 = new
+     * ArrayList<ArrayList<Integer>>(); ArrayList<Integer> sdiff = new
+     * ArrayList<Integer>(); ArrayList<Integer> tdiff = new
+     * ArrayList<Integer>(); ArrayList<Integer> chain = new
+     * ArrayList<Integer>(); boolean[] indexes = new boolean[diff.size()];
+     * Arrays.fill(indexes, false); int head; int curend; int j;
+     * ArrayList<Integer> diff2Row; int chainFirst;
+     * 
+     * 
+     * for (ArrayList<Integer> pair : diff) { sdiff.add(pair.get(0));
+     * tdiff.add(pair.get(1)); } //поиск замкнутых цепочек for (int i = 0; i <
+     * sdiff.size(); i++) { chain.clear(); head = sdiff.get(i); curend =
+     * tdiff.get(i); j = i; while (true) { chain.add(j); if (curend == head) {
+     * break; } if (sdiff.contains(curend)) { j = sdiff.indexOf(curend); curend
+     * = tdiff.get(j); } else { break; } } if (chain.size() > 1) { for (int k :
+     * chain) { indexes[k] = true; } chainFirst = chain.get(0); for (int k = 1;
+     * k < chain.size(); k++) { diff2Row = new ArrayList<Integer>(2);
+     * diff2Row.add(Character.toUpperCase(sdiff.get(chainFirst)));
+     * diff2Row.add(Character.toUpperCase(sdiff.get(k))); diff2.add(diff2Row); }
+     * }
+     * 
+     * } for (int k = 0; k < indexes.length; k++) { if (!indexes[k]) {
+     * diff2.add(diff.get(k)); } } return diff2; }
+     */
 
     public static void main(String[] args) {
         int d = Distance.countDistance("ба", "аб", true);
@@ -416,8 +387,7 @@ public class Distance {
         int l1 = word1.length();
         int l2 = word2.length();
         int len = l1 < l2 ? l1 : l2;
-        return new BigDecimal((double)dl/len).setScale(2, java.math.RoundingMode.UP).doubleValue();
+        return new BigDecimal((double) dl / len).setScale(2,
+                java.math.RoundingMode.UP).doubleValue();
     }
 }
-
-

@@ -12,7 +12,7 @@ import lingv.Distance;
 /**
  * Осуществляет заполнение БД буквенными паронимами на основе текстового файла
  */
-public class LetterParonymFileLoader extends ParonymFileLoader{
+public class LetterParonymFileLoader extends ParonymFileLoader {
     /**
      * Имя базы данных
      */
@@ -29,7 +29,7 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
     String codesFileName;
 
     /**
-     *
+     * 
      * @param args
      */
     public static void main(String[] args) {
@@ -39,7 +39,8 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
         String codesFileName = "inputFiles\\codes.txt";
 
         try {
-            loader = new LetterParonymFileLoader(dbName, inputFileName, codesFileName);
+            loader = new LetterParonymFileLoader(dbName, inputFileName,
+                    codesFileName);
             loader.run_prepareLetParDb();
             loader.unInit();
 
@@ -49,7 +50,8 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
 
     }
 
-    public LetterParonymFileLoader(String dbName, String inputFileName, String codesFileName) throws Exception {
+    public LetterParonymFileLoader(String dbName, String inputFileName,
+            String codesFileName) throws Exception {
         super.init(dbName);
         this.dbName = dbName;
         this.inputFileName = inputFileName;
@@ -59,7 +61,9 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
     /**
      * Создать базу данных буквенных паронимов на основе текстового файла.
      * Удалить существительные во множественном числе.
-     * @throws Exception ошибка в работе процедуры загрузки
+     * 
+     * @throws Exception
+     *             ошибка в работе процедуры загрузки
      */
     public void run() throws Exception {
         db.createDB();
@@ -69,9 +73,11 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
     }
 
     /**
-     * Составляет подготовительную БД на основе файла буквенных паронимов для дальнейшего слияния с БД морфемных
-     * паронимов.
-     * @throws Exception ошибка в работе процедуры загрузки
+     * Составляет подготовительную БД на основе файла буквенных паронимов для
+     * дальнейшего слияния с БД морфемных паронимов.
+     * 
+     * @throws Exception
+     *             ошибка в работе процедуры загрузки
      */
     public void run_prepareLetParDb() throws Exception {
         db.createDB();
@@ -82,9 +88,11 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
 
     /**
      * Создать базу данных буквенных паронимов на основе текстового файла.
-     * Удалить существительные во множественном числе.
-     * Автоматически пополнить базу.
-     * @throws Exception ошибка в работе процедуры загрузки
+     * Удалить существительные во множественном числе. Автоматически пополнить
+     * базу.
+     * 
+     * @throws Exception
+     *             ошибка в работе процедуры загрузки
      */
     public void run_FileAndAutoParonyms() throws Exception {
         db.createDB();
@@ -96,13 +104,20 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
 
     /**
      * Загрузить словарные данные из текстового файла в базу данных.
-     * @param inputFileName имя исходного текстового файла
-     * @param addParonyms true - загрузить слова и паронимические отношения, false - загрузить только слова
-     * @throws SQLException ошибка при работе с БД
-     * @throws ParonymCodeException ошибка кодирования параметров паронимического отношения
+     * 
+     * @param inputFileName
+     *            имя исходного текстового файла
+     * @param addParonyms
+     *            true - загрузить слова и паронимические отношения, false -
+     *            загрузить только слова
+     * @throws SQLException
+     *             ошибка при работе с БД
+     * @throws ParonymCodeException
+     *             ошибка кодирования параметров паронимического отношения
      */
-    void loadDataFromFileToDb(String inputFileName, boolean addParonyms) throws SQLException, ParonymCodeException {
-        //initialFileName = C:\java\paronym\letpar.txt
+    void loadDataFromFileToDb(String inputFileName, boolean addParonyms)
+            throws SQLException, ParonymCodeException {
+        // initialFileName = C:\java\paronym\letpar.txt
         BufferedReader inputFile;
         String s;
         WordFromFile headword = null;
@@ -115,7 +130,7 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
 
         byte dlcode;
 
-        try{
+        try {
             inputFile = new BufferedReader(new FileReader(inputFileName));
             System.out.println("Loading data from file " + inputFileName);
 
@@ -127,31 +142,33 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
                 }
                 s = s.toLowerCase();
 
-                //обработка предыдущей группы паронимов
+                // обработка предыдущей группы паронимов
                 if (s.charAt(0) != ' ') {
-                    //обнулить старое заглавное слово
+                    // обнулить старое заглавное слово
                     headword = null;
                 }
 
-                //обработка текущего слова
+                // обработка текущего слова
                 w = makeWordFromFile(s.trim().toCharArray());
 
                 if (headword != null) {
                     w.part = headword.part;
                 }
 
-                if (!db.queryResult("select * from words where " +
-                        "(word='" + w.word + "')and(part=" + w.part + ")").next()) {
+                if (!db.queryResult(
+                        "select * from words where " + "(word='" + w.word
+                                + "')and(part=" + w.part + ")").next()) {
 
-                    db.update("INSERT INTO WORDS(word,part) VALUES( '" + w.word + "'," + w.part + ")");
+                    db.update("INSERT INTO WORDS(word,part) VALUES( '" + w.word
+                            + "'," + w.part + ")");
 
                 }
 
-                w.id = db.queryAndGetId("select id from words where " +
-                        "(word='" + w.word + "')and(part=" + w.part + ")");
+                w.id = db.queryAndGetId("select id from words where "
+                        + "(word='" + w.word + "')and(part=" + w.part + ")");
 
                 if (s.charAt(0) != ' ') {
-                    //заглавное слово
+                    // заглавное слово
                     headword = w;
                     id1 = w.id;
                 } else if (addParonyms) {
@@ -159,35 +176,45 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
                     dl = Distance.countDistance(w.word, headword.word, false);
                     dl2 = Distance.countDistance(w.word, headword.word, true);
 
-                    dlcode = ParonymCoder.generateDlCode(dl,dl2);
-                   if ((dlcode != -1) && !db.queryResult("select * from paronyms where " +
-                            "(id1=" + id1 + ") and(id2=" + id2 + ") union " +
-                            "select * from paronyms where (id1=" + id2 + ") and(id2=" + id1 + ")").next()
-                            ) {
-                        db.update("insert into paronyms (id1,id2,dlcode) values " +
-                                "(" + id1 + "," + id2 + "," + dlcode + ")");
+                    dlcode = ParonymCoder.generateDlCode(dl, dl2);
+                    if ((dlcode != -1)
+                            && !db.queryResult(
+                                    "select * from paronyms where "
+                                            + "(id1="
+                                            + id1
+                                            + ") and(id2="
+                                            + id2
+                                            + ") union "
+                                            + "select * from paronyms where (id1="
+                                            + id2 + ") and(id2=" + id1 + ")")
+                                    .next()) {
+                        db.update("insert into paronyms (id1,id2,dlcode) values "
+                                + "(" + id1 + "," + id2 + "," + dlcode + ")");
                     }
 
                 }
             }
 
         } catch (IOException e) {
-              e.printStackTrace();
+            e.printStackTrace();
         }
 
     }
 
     /**
-     * Преобразовать строку из входного файла в объект WordFromFile.
-     * Во время преобразования выбрасываются цифры, определяется часть речи (если она указана).
-     * @param str строка файла
+     * Преобразовать строку из входного файла в объект WordFromFile. Во время
+     * преобразования выбрасываются цифры, определяется часть речи (если она
+     * указана).
+     * 
+     * @param str
+     *            строка файла
      * @return слово, соответствующее строке str (объект WordFromFile).
      */
     WordFromFile makeWordFromFile(char[] str) {
         int len = str.length;
         int i = 0;
 
-        //для слов со знаком ^
+        // для слов со знаком ^
         int j = 0;
         boolean shift = false;
 
@@ -196,23 +223,24 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
         try {
             while (i < len) {
                 if (str[i] == '<') {
-                    //@todo случай неправильных вх. данных (возможен выход за гр. массива)
+                    // @todo случай неправильных вх. данных (возможен выход за
+                    // гр. массива)
                     switch (str[i + 1]) {
-                        case's':
-                            w.part = GramDecoder.NOUN;
-                            break;
-                        case'v':
-                            w.part = GramDecoder.VERB;
-                            break;
-                        case'a':
-                            if (str[i + 2] == 'j') {
-                                w.part = GramDecoder.ADJECT;
-                            } else {
-                                w.part = GramDecoder.ADVERB;
-                            }
-                            break;
-                        default:
-                            throw new InvalidInputException();
+                    case 's':
+                        w.part = GramDecoder.NOUN;
+                        break;
+                    case 'v':
+                        w.part = GramDecoder.VERB;
+                        break;
+                    case 'a':
+                        if (str[i + 2] == 'j') {
+                            w.part = GramDecoder.ADJECT;
+                        } else {
+                            w.part = GramDecoder.ADVERB;
+                        }
+                        break;
+                    default:
+                        throw new InvalidInputException();
                     }
                     len = i;
                     break;
@@ -222,7 +250,7 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
                 } else if (str[i] == '^') {
                     shift = true;
                     str[j] = Character.toUpperCase(str[i + 1]);
-                    i++; //пропустить 1 символ
+                    i++; // пропустить 1 символ
                 } else if (shift) {
                     str[j] = str[i];
                 }
@@ -237,7 +265,5 @@ public class LetterParonymFileLoader extends ParonymFileLoader{
 
         return w;
     }
-
-
 
 }

@@ -9,13 +9,9 @@ import java.util.ArrayList;
 
 import db.Database;
 
-
 /**
- * Created by IntelliJ IDEA.
- * User: Таня
- * Date: 10.02.2009
- * Time: 20:19:40
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: Таня Date: 10.02.2009 Time: 20:19:40 To
+ * change this template use File | Settings | File Templates.
  */
 public class GuiCtrl {
     Database db;
@@ -27,12 +23,12 @@ public class GuiCtrl {
 
     public void createGuiFrame() {
 
-       try {
-          frame = new GuiFrame(this);
+        try {
+            frame = new GuiFrame(this);
 
-       } catch (Exception ex) {
-           ex.printStackTrace();
-       }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void regAotGUItest(AotGUItest r) {
@@ -53,7 +49,6 @@ public class GuiCtrl {
         db.shutdown();
     }
 
-
     public String executeGoButton(String word) throws Exception {
         ArrayList<Paradigm> paradigms;
         paradigms = MorphAn.analyzeForm(word);
@@ -63,40 +58,39 @@ public class GuiCtrl {
         return paradigms.get(0).params;
     }
 
-    public String executeReverseButton(String word) throws Exception{
+    public String executeReverseButton(String word) throws Exception {
 
         return "";
     }
 
-
-    //DictionaryGuiForm
-    //@todo add queryParams (class QueryParamsSet ?)
-    public ArrayList<ParonymList> executeFindParonymsButton(String word, QueryParameters params)
-            throws Exception {
-        return dictionary.executeQuery(word,params);
+    // DictionaryGuiForm
+    // @todo add queryParams (class QueryParamsSet ?)
+    public ArrayList<ParonymList> executeFindParonymsButton(String word,
+            QueryParameters params) throws Exception {
+        return dictionary.executeQuery(word, params);
     }
 
     public static void main(String[] args) {
         try {
             final GuiCtrl ctrl = new GuiCtrl();
-//            ctrl.init(args[0]);
+            // ctrl.init(args[0]);
             ctrl.init("db/paronym/paronym");
 
-            //ctrl.init_aotGuiTest();
+            // ctrl.init_aotGuiTest();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ctrl.createGuiFrame();
                 }
             });
-            //ctrl.uninit();
+            // ctrl.uninit();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
     }
 
-
-    public ArrayList<CompareForms> executeCompareAction(String form1, String form2) throws Exception {
+    public ArrayList<CompareForms> executeCompareAction(String form1,
+            String form2) throws Exception {
         return dictionary.executeCompareQuery(form1, form2);
     }
 }
