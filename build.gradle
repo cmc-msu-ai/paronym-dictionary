@@ -10,6 +10,16 @@ repositories {
 }
 
 dependencies {
+    compile 'com.intellij:forms_rt:7.0.3'
     compile 'org.hsqldb:hsqldb:2.0.0'
     testCompile 'junit:junit:4.+'
+}
+
+idea.project.ipr {
+    withXml { provider ->
+        provider.node.appendNode('component', [name: 'uidesigner-configuration']).appendNode('option', [name: 'INSTRUMENT_CLASSES', value: 'false'])
+    }
+    beforeMerged { project ->
+        project.modulePaths.clear()
+    }
 }

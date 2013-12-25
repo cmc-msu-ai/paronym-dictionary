@@ -12,7 +12,7 @@ import db.Database;
 
 /**
  * Created by IntelliJ IDEA.
- * User: пїЅпїЅпїЅпїЅ
+ * User: Таня
  * Date: 10.02.2009
  * Time: 20:19:40
  * To change this template use File | Settings | File Templates.
